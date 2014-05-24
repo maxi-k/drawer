@@ -25,6 +25,11 @@
                    onclick="drawer.api.gui.displayPrompt('lol');">
                     Element hinzuf&uuml;gen
                 </a>
+
+                <a class="button" href="#"
+                   onclick="drawer.api.addObject('test', '[[600, 500]]')">
+                    Element hinzuf&uuml;gen
+                </a>
                 <p></p>
                 <!-- <a class="button" href="#"
                         onclick="drawer.api.state.addObject('Quadrat',
@@ -40,8 +45,7 @@
         <div class="clearfloat"></div>
         <script src="js/drawer.js"></script>
         <script>
-            drawer.init.initState();
-            drawer.init.initView();
+            drawer.core.startLoop();
         </script>
     </body>
 </html>
