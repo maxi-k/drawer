@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="Polygon Drawer">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Polygon Drawer</title>
+        <link rel="stylesheet" href="css/reset.css">
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div id="prompt-overlay" style="display:none;">
+            <div id="prompt-wrapper">
+                <a href="#" id="prompt-close-button"
+                   onclick="drawer.api.gui.closePrompt()">X</a>
+                <div class="clearfloat"></div>
+                <div id="prompt">
+                </div>
+            </div>
+        </div>
+        <div class="height-wrapper" style="float: left;">
+            <div id="controls">
+                <h2>Zeichner</h2>
+                <a class="button" href="#"
+                   onclick="drawer.api.gui.displayPrompt('lol');">
+                    Element hinzuf&uuml;gen
+                </a>
+                <p></p>
+                <!-- <a class="button" href="#"
+                        onclick="drawer.api.state.addObject('Quadrat',
+                                            [[500, 500, 0, 0], [500, 600, 0, 0],
+                                             [600, 600, 0, 0], [600, 500, 0, 0]])">
+                        Element test
+                </a> -->
+                <div class="control-segment" id="object-list"></div>
+                <div class="control-segment" id="object-info"></div>
+            </div>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="clearfloat"></div>
+        <script src="js/drawer.js"></script>
+        <script>
+            drawer.init.initState();
+            drawer.init.initView();
+        </script>
+    </body>
+</html>
