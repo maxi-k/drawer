@@ -67,9 +67,7 @@
     (if (= (get-in state [:info :selected]) obj-name)
       (set! (.-strokeStyle context) "#f00")
       (set! (.-strokeStyle context) "#000"))
-    (canvas/draw-object obj context))
-  ;;(gui/redraw-object-list state)
-  )
+    (canvas/draw-object obj context)))
 
 (defn- run-loop
   "Runs the redrawing loop."
