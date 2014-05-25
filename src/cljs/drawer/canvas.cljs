@@ -20,7 +20,7 @@
   obj)
 
 ;; Stub
-(defn mirror
+(defn- mirror
   "Mirrors an object."
   [obj objs]
   obj)
@@ -47,12 +47,12 @@
   [point]
   (pop point))
 
-(defn project-point
+(defn- project-point
   "Projects a 4D point onto the 2d plain."
   [point]
   (-> point P4->P3 P3->P2))
 
-(defn project-obj
+(defn- project-obj
   "Projects an object (4D) onto
   the screen plain (2D).
   Doesn't actually draw the object,
