@@ -18,7 +18,7 @@
 (def prompt-add-obj
   "The default content in each
   add-object prompt"
-  [(htag "h2" "Element hinzufügen")
+  [(htag "h2" "Element hinzufügen (Funktioniert noch nicht!)")
    (htag "div" (str "Objekt-Name" (input "text" "obj-name")
                     br br input-form-point),
          "id" "prompt-object-decl")

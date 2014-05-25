@@ -5325,7 +5325,7 @@ function Ce(a) {
   c.a = b;
   c.c = a;
   return c;
-}(), Ge = [w("x1"), w(Fe.a("text", "x1")), w("x2"), w(Fe.a("text", "x2")), w("x3"), w(Fe.c("text", "x3", 0)), w("x4"), w(Fe.c("text", "x4", 0))].join(""), He = new X(null, 3, 5, Z, [De("h2", "Element hinzuf\u00fcgen"), De.e("div", [w("Objekt-Name"), w(Fe.a("text", "obj-name")), w(Ee), w(Ee), w(Ge)].join(""), M(["id", "prompt-object-decl"], 0)), De.e("a", "Hinzuf\u00fcgen", M("href # class button onclick drawer.api.submitPrompt();".split(" "), 0))], null);
+}(), Ge = [w("x1"), w(Fe.a("text", "x1")), w("x2"), w(Fe.a("text", "x2")), w("x3"), w(Fe.c("text", "x3", 0)), w("x4"), w(Fe.c("text", "x4", 0))].join(""), He = new X(null, 3, 5, Z, [De("h2", "Element hinzuf\u00fcgen (Funktioniert noch nicht!)"), De.e("div", [w("Objekt-Name"), w(Fe.a("text", "obj-name")), w(Ee), w(Ee), w(Ge)].join(""), M(["id", "prompt-object-decl"], 0)), De.e("a", "Hinzuf\u00fcgen", M("href # class button onclick drawer.api.submitPrompt();".split(" "), 0))], null);
 function Ie(a) {
   Ae(a, function(a) {
     return a;
