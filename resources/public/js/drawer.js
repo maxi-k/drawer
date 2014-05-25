@@ -5327,13 +5327,19 @@ function Ce(a) {
   return c;
 }(), Ge = [w("x1"), w(Fe.a("text", "x1")), w("x2"), w(Fe.a("text", "x2")), w("x3"), w(Fe.c("text", "x3", 0)), w("x4"), w(Fe.c("text", "x4", 0))].join(""), He = new X(null, 3, 5, Z, [De("h2", "Element hinzuf\u00fcgen"), De.e("div", [w("Objekt-Name"), w(Fe.a("text", "obj-name")), w(Ee), w(Ee), w(Ge)].join(""), M(["id", "prompt-object-decl"], 0)), De.e("a", "Hinzuf\u00fcgen", M("href # class button onclick drawer.api.submitPrompt();".split(" "), 0))], null);
 function Ie(a) {
+  Ae(a, function(a) {
+    return a;
+  });
+  return a;
+}
+function Je(a) {
   a = null == a ? null : La(a);
   return null == a ? null : La(a);
 }
-function Je(a) {
-  return Pc(a, new X(null, 1, 5, Z, [oe], null), Lc.a(Ie, a.b ? a.b(pe) : a.call(null, pe)));
-}
 function Ke(a) {
+  return Pc(a, new X(null, 1, 5, Z, [oe], null), Lc.a(Je, a.b ? a.b(pe) : a.call(null, pe)));
+}
+function Le(a) {
   var b = Ub(a) ? S.a(Rd, a) : a, c = Hb.a(b, pe);
   return Lc.a(function(a, b, c) {
     return function(a) {
@@ -5345,8 +5351,8 @@ function Ke(a) {
     };
   }(a, b, c), S.c(Ec, jd, c)));
 }
-function Le(a) {
-  var b = Me, c = a.b ? a.b(oe) : a.call(null, oe), d = c.b ? c.b(0) : c.call(null, 0);
+function Me(a) {
+  var b = Ne, c = a.b ? a.b(oe) : a.call(null, oe), d = c.b ? c.b(0) : c.call(null, 0);
   b.beginPath();
   b.moveTo(d.b ? d.b(0) : d.call(null, 0), d.b ? d.b(1) : d.call(null, 1));
   for (var c = F(c), e = null, f = 0, h = 0;;) {
@@ -5365,18 +5371,18 @@ function Le(a) {
   b.lineTo(d.b ? d.b(0) : d.call(null, 0), d.b ? d.b(1) : d.call(null, 1));
   b.stroke();
   b.closePath();
-  a = Ie(Ke(a));
+  a = Je(Le(a));
   b.beginPath();
   b.arc(a.b ? a.b(0) : a.call(null, 0), a.b ? a.b(1) : a.call(null, 1), 2, 0, 2 * Math.PI);
   b.stroke();
   b.closePath();
 }
-;function Ne() {
+;function Oe() {
   var a = document.getElementById("prompt");
   document.getElementById("prompt-overlay").style.display = "none";
   return a.innerHTML = "";
 }
-function Oe(a) {
+function Pe(a) {
   var b = function() {
     return function d(b) {
       return new V(null, function() {
@@ -5416,61 +5422,63 @@ function Oe(a) {
   }();
   Ce([w("\x3cul\x3e"), w(S.a(w, b)), w("\x3c/ul\x3e")].join(""));
 }
-;var Pe = 1E3 / 60, Qe = document.getElementById("canvas"), Me = Qe.getContext("2d"), Re = document.getElementById("controls");
-function Se() {
+;var Qe = 1E3 / 60, Re = document.getElementById("canvas"), Ne = Re.getContext("2d"), Se = document.getElementById("controls");
+function Te() {
   var a = window.innerHeight;
-  Qe.setAttribute("width", window.innerWidth - parseInt(Re.offsetWidth) - 1);
-  return Qe.setAttribute("height", a);
+  Re.setAttribute("width", window.innerWidth - parseInt(Se.offsetWidth) - 1);
+  return Re.setAttribute("height", a);
 }
-Se();
-window.onresize = Se;
-var Te = fe.b(J);
-function Ue(a) {
-  Me.save();
-  Me.setTransform(1, 0, 0, 1, 0, 0);
-  Me.clearRect(0, 0, Qe.width, Qe.height);
-  Me.restore();
+Te();
+window.onresize = Te;
+var Ue = fe.b(J);
+function Ve(a) {
+  Ne.save();
+  Ne.setTransform(1, 0, 0, 1, 0, 0);
+  Ne.clearRect(0, 0, Re.width, Re.height);
+  Ne.restore();
   for (var b = F(a.b ? a.b(ne) : a.call(null, ne)), c = null, d = 0, e = 0;;) {
     if (e < d) {
       var f = c.J(null, e), h = R.c(f, 0, null), f = R.c(f, 1, null);
-      rb.a(Nc.a(a, new X(null, 2, 5, Z, [me, ye], null)), h) ? Me.strokeStyle = "#f00" : Me.strokeStyle = "#000";
-      Le(f);
+      rb.a(Nc.a(a, new X(null, 2, 5, Z, [me, ye], null)), h) ? Ne.strokeStyle = "#f00" : Ne.strokeStyle = "#000";
+      Me(f);
       e += 1;
     } else {
       if (b = F(b)) {
-        Qb(b) ? (c = lb(b), b = mb(b), h = c, d = Q(c), c = h) : (c = G(b), h = R.c(c, 0, null), f = R.c(c, 1, null), rb.a(Nc.a(a, new X(null, 2, 5, Z, [me, ye], null)), h) ? Me.strokeStyle = "#f00" : Me.strokeStyle = "#000", Le(f), b = L(b), c = null, d = 0), e = 0;
+        Qb(b) ? (c = lb(b), b = mb(b), h = c, d = Q(c), c = h) : (c = G(b), h = R.c(c, 0, null), f = R.c(c, 1, null), rb.a(Nc.a(a, new X(null, 2, 5, Z, [me, ye], null)), h) ? Ne.strokeStyle = "#f00" : Ne.strokeStyle = "#000", Me(f), b = L(b), c = null, d = 0), e = 0;
       } else {
         return null;
       }
     }
   }
 }
-var We = function Ve(b) {
+var Xe = function We(b) {
   window.setTimeout(function() {
     var c;
-    c = Pa(Te);
+    c = Pa(Ue);
     c = null == c ? null : Ka(c);
-    p(c) ? (c = S.a(Dc, Pa(Te)).call(null, b), ge(Te, J), Oe(c)) : c = b;
-    var d = new X(null, 1, 5, Z, [ne], null), e = c.b ? c.b(ne) : c.call(null, ne), e = Ae(e, Je);
+    p(c) ? (c = S.a(Dc, Pa(Ue)).call(null, b), ge(Ue, J), Pe(c)) : c = b;
+    var d = new X(null, 1, 5, Z, [ne], null), e;
+    e = Ie(c.b ? c.b(ne) : c.call(null, ne));
+    e = Ae(e, Ke);
     c = Pc(c, d, e);
-    return Ve(c);
-  }, Pe);
-  return Ue(b);
+    return We(c);
+  }, Qe);
+  return Ve(b);
 };
 da("drawer.core.startLoop", function() {
-  return We(new ka(null, 2, [ne, yd, me, new ka(null, 1, [ye, we], null)], null));
+  return Xe(new ka(null, 2, [ne, yd, me, new ka(null, 1, [ye, we], null)], null));
 });
-function Xe(a, b) {
-  return he.c(Te, Fb, function(c) {
+function Ye(a, b) {
+  return he.c(Ue, Fb, function(c) {
     var d = new X(null, 2, 5, Z, [ne, a], null), e = le.b(b);
     return Pc(c, d, new ka(null, 3, [pe, e, oe, null, ze, new ka(null, 5, [ve, 0, ue, 0, te, 0, qe, 0, se, xe], null)], null));
   });
 }
-da("drawer.api.addObject", Xe);
-Xe("Linie", new X(null, 2, 5, Z, [new X(null, 4, 5, Z, [100, 100, 0, 0], null), new X(null, 4, 5, Z, [150, 300, 0, 0], null)], null));
-Xe("Dreieck", new X(null, 3, 5, Z, [new X(null, 4, 5, Z, [300, 200, 0, 0], null), new X(null, 4, 5, Z, [400, 400, 0, 0], null), new X(null, 4, 5, Z, [200, 400, 0, 0], null)], null));
+da("drawer.api.addObject", Ye);
+Ye("Linie", new X(null, 2, 5, Z, [new X(null, 4, 5, Z, [100, 100, 0, 0], null), new X(null, 4, 5, Z, [150, 300, 0, 0], null)], null));
+Ye("Dreieck", new X(null, 3, 5, Z, [new X(null, 4, 5, Z, [300, 200, 0, 0], null), new X(null, 4, 5, Z, [400, 400, 0, 0], null), new X(null, 4, 5, Z, [200, 400, 0, 0], null)], null));
 da("drawer.api.setSelected", function(a) {
-  return he.c(Te, Fb, function(b) {
+  return he.c(Ue, Fb, function(b) {
     return Pc(b, new X(null, 2, 5, Z, [me, ye], null), a);
   });
 });
@@ -5480,10 +5488,10 @@ da("drawer.api.displayPrompt", function() {
   return a.innerHTML = S.a(w, He);
 });
 da("drawer.api.closePrompt", function() {
-  return Ne();
+  return Oe();
 });
 da("drawer.api.submitPrompt", function() {
-  return Ne();
+  return Oe();
 });
 
 })();

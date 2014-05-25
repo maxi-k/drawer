@@ -17,27 +17,30 @@
   "Rotates an object around
   another one."
   [obj objs]
-  (obj))
+  obj)
 
 ;; Stub
 (defn mirror
   "Mirrors an object."
   [obj objs]
-  (obj))
+  obj)
 
 (defn- rotate-objects
   "Updates the rotation of the objects
   contained in the object list."
   [objs]
-  ;; (util/update-values objs #(rotate % objs))
- objs )
+  (util/update-values objs #(rotate % objs))
+  objs)
 
+
+;; TODO: This is a stub
 (defn- P4->P3
   "Projects a 4D point onto
   a 2D plain."
   [point]
   (pop point))
 
+;; TODO: This is a stub
 (defn- P3->P2
   "Projects a 3D point onto
   a 2D plain."
@@ -55,7 +58,8 @@
   Doesn't actually draw the object,
   just updates its 2D points"
   [obj]
-  (assoc-in obj [:points2d]
+  (assoc-in obj
+            [:points2d]
             (mapv project-point (obj :points))))
 
 (defn- project-objects
