@@ -4,37 +4,21 @@
             [cljs.core.async :as async :refer [put! chan >! <! close! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-(def ^:private fps
+(def fps
   "Run the game at 60 fps"
   (/ 1000 60))
 
-(def ^:private canvas
+(def canvas
   "The canvas dom element."
   (.getElementById js/document "canvas"))
 
-(def ^:private context
+(def context
   "The canvas 2d context."
   (.getContext canvas "2d"))
 
-(def ^:private controls
+(def controls
   "The controls dom element."
   (.getElementById js/document "controls"))
-
-(defn set-canvas-size
-  "Set the canvas size to the maximum
-  possible without overflow."
-  []
-  (let [cwidth (.-offsetWidth controls)
-        width  (- (.-innerWidth js/window) (js/parseInt cwidth))
-        height (.-innerHeight js/window)]
-    (.setAttribute canvas "width" (dec width))
-    (.setAttribute canvas "height" height)))
-
-;; Calling set-canvas-size when the site loads
-(set-canvas-size)
-
-;; Setting the canvas size on window resize (window.onresize)
-(set! (.-onresize js/window) set-canvas-size)
 
 (defn redraw-canvas
   "Redraws the screen once."
@@ -49,35 +33,39 @@
 
 (def ^:private user-channel (chan))
 
-(defn add-change
-  "Adds a function to the list of
-  changes to be applied to the state."
-  [action]
-  (put! user-channel action))
+(defn user-action
+  "Adds an action into the user channel.
+  This applies the action to the current state
+  and updates the gui asynchronously."
+  ([] (put! user-channel identity))
+  ([action] (put! user-channel action)))
 
-(add-change (fn [state] state))
+;; Initializing the screen
+(user-action)
 
 (def ^:private canvas-channel (chan))
 
-(def ^:private inputs
-  (async/merge [user-channel
-                canvas-channel]))
+(defn canvas-action
+  "Adds an action into the canvas channel.
+  This applies the action to the current state
+  and updates the gui asynchronously."
+  ([] (put! canvas-channel identity))
+  ([action] (put! canvas-channel action)))
 
-;; The game loop
-(defn- game-loop []
-  (go
-    (loop [state {:objects {}
-                  :info {:selected :none}}]
-      (let [[action chan] (alts! [user-channel
-                                  canvas-channel]
-                                 :priority true)]
-        (recur (-> (action state)
-                   canvas/update
-                   redraw-canvas
-                   ((condp = chan
-                      user-channel (fn [s] (gui/redraw-object-list s))
-                      canvas-channel (fn [s] s)))
-                   ))))))
-
-
-(game-loop)
+;; This could be called the "game loop".
+;; Based on core.async channels, this updates
+;; the necessary parts of the gui whenever
+;; something updates a channel.
+(go
+  (loop [state {:objects {}
+                :info {:selected :none}}]
+    (let [[action chan] (alts! [user-channel
+                                canvas-channel]
+                               :priority true)]
+      (recur (-> (action state)
+                 canvas/update
+                 redraw-canvas
+                 ((condp = chan
+                    user-channel (fn [s] (gui/redraw-object-list s))
+                    canvas-channel (fn [s] s)))
+                 )))))

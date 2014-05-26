@@ -7,10 +7,10 @@
 (defn ^:export addObject
   "Adds an object to the object list."
   [obj-name points]
-  (core/add-change (fn [state]
-                     (assoc-in state
-                       [:objects obj-name]
-                       (canvas/create-object (js->clj points))))))
+  (core/user-action (fn [state]
+                      (assoc-in state
+                                [:objects obj-name]
+                                (canvas/create-object (js->clj points))))))
 
 ;; TEMPORARY
 (addObject "Linie" [[100 100 0 0] [150 300 0 0]])
@@ -19,8 +19,8 @@
 (defn ^:export setSelected
   "Sets the currently selected object."
   [obj-name]
-  (core/add-change (fn [state]
-                     (assoc-in state [:info :selected] obj-name))))
+  (core/user-action (fn [state]
+                      (assoc-in state [:info :selected] obj-name))))
 
 (defn ^:export displayPrompt
   "Displays the user prompt for
