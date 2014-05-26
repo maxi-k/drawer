@@ -1,7 +1,8 @@
 (ns drawer.core
   (:require [drawer.canvas :as canvas]
             [drawer.gui :as gui]
-            [cljs.core.async :as async ]))
+            [cljs.core.async :as async :refer [put! chan >! <! close! timeout alts!]])
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def ^:private fps
   "Run the game at 60 fps"
@@ -35,32 +36,7 @@
 ;; Setting the canvas size on window resize (window.onresize)
 (set! (.-onresize js/window) set-canvas-size)
 
-(def ^:private user-changes
-  "A list of functions to be
-  applied to the state on the
-  next frame - cleared afterwards."
-  (atom '()) )
-
-(defn add-change
-  "Adds a function to the list of
-  changes to be applied to the state."
-  [a]
-  (swap! user-changes conj a))
-
-(defn- apply-user-changes
-  "Applies the user changes to given
-  state and clears out the changes to
-  be run through."
-  [state]
-  (if (peek @user-changes)
-    (let [res-state ((apply comp @user-changes) state)]
-      (reset! user-changes '())
-      (gui/redraw-object-list res-state)
-      res-state)
-    state))
-
-
-(defn- redraw-screen
+(defn redraw-canvas
   "Redraws the screen once."
   [state]
   (canvas/clear canvas context)
@@ -68,18 +44,40 @@
     (if (= (get-in state [:info :selected]) obj-name)
       (set! (.-strokeStyle context) "#f00")
       (set! (.-strokeStyle context) "#000"))
-    (canvas/draw-object obj context)))
+    (canvas/draw-object obj context))
+  state)
 
-(defn- run-loop
-  "Runs the redrawing loop."
-  [state]
-  (.setTimeout js/window (fn [] (run-loop (-> state
-                                             apply-user-changes
-                                             canvas/update))) fps)
-  (redraw-screen state))
+(def ^:private user-channel (chan))
 
-(defn ^:export startLoop
-  "Initially starts the redraw-loop."
-  []
-  (run-loop {:objects {}
-             :info {:selected :none}}))
+(defn add-change
+  "Adds a function to the list of
+  changes to be applied to the state."
+  [action]
+  (put! user-channel action))
+
+(add-change (fn [state] state))
+
+(def ^:private canvas-channel (chan))
+
+(def ^:private inputs
+  (async/merge [user-channel
+                canvas-channel]))
+
+;; The game loop
+(defn- game-loop []
+  (go
+    (loop [state {:objects {}
+                  :info {:selected :none}}]
+      (let [[action chan] (alts! [user-channel
+                                  canvas-channel]
+                                 :priority true)]
+        (recur (-> (action state)
+                   canvas/update
+                   redraw-canvas
+                   ((condp = chan
+                      user-channel (fn [s] (gui/redraw-object-list s))
+                      canvas-channel (fn [s] s)))
+                   ))))))
+
+
+(game-loop)

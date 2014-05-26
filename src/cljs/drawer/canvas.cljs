@@ -1,17 +1,6 @@
 (ns drawer.canvas
   (:require [drawer.util :as util]))
 
-(defn create-object
-  "Creates a canvas object."
-  [points]
-  {:points points
-   :points2d nil
-   :rotation {:x1 0
-              :x2 0
-              :x3 0
-              :x4 0
-              :center :self}})
-
 ;; Stub
 (defn- rotate
   "Rotates an object around
@@ -117,7 +106,6 @@
     (.closePath ctx)
     (draw-center obj ctx)))
 
-
 (defn clear
   "Clear the canvas but keep its settings."
   [canvas ctx]
@@ -125,3 +113,11 @@
   (.setTransform ctx 1 0 0 1 0 0)
   (.clearRect ctx 0 0 (.-width canvas) (.-height canvas))
   (.restore ctx))
+
+(defn create-object
+  "Creates a canvas object."
+  [points]
+  {:points points
+   :points2d (mapv project-point points)
+   :rotation {:speed [0 0 0 0]
+              :center :self}})

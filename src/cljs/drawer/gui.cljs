@@ -30,4 +30,5 @@
                  "id" (if selected? "selected-obj" nil),
                  "onclick" (str "drawer.api.setSelected(&#39;" obj-name "&#39;)"))
                "</li>"))]
-    (util/set-dom! "object-list" (str "<ul>" (apply str object-list) "</ul>"))))
+    (util/set-dom! "object-list" (str "<ul>" (apply str object-list) "</ul>")))
+  state)
