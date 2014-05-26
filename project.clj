@@ -12,6 +12,6 @@
   :cljsbuild {:builds
               [{:source-paths ["src/cljs"]
                 :compiler
-                {:output-to "resources/public/js/drawer.js"
+                {:output-to "resources/public/js/drawer.min.js"
                  :optimizations :advanced
                  :pretty-print false}}]})
