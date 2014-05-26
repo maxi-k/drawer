@@ -1,6 +1,7 @@
 (ns drawer.core
   (:require [drawer.canvas :as canvas]
-            [drawer.gui :as gui]))
+            [drawer.gui :as gui]
+            [cljs.core.async :as async ]))
 
 (def ^:private fps
   "Run the game at 60 fps"
