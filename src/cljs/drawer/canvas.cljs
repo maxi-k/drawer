@@ -92,7 +92,7 @@
     (.stroke ctx)
     (.closePath ctx)))
 
-(defn draw-object
+(defn- draw-object
   "Draws given object on the canvas context"
   [obj ctx]
   (let [points (obj :points2d)
@@ -106,7 +106,7 @@
     (.closePath ctx)
     (draw-center obj ctx)))
 
-(defn clear
+(defn- clear
   "Clear the canvas but keep its settings."
   [canvas ctx]
   (.save ctx)
@@ -121,3 +121,14 @@
    :points2d (mapv project-point points)
    :rotation {:speed [0 0 0 0]
               :center :self}})
+
+(defn redraw-canvas
+  "Redraws the screen once."
+  [state canvas context]
+  (clear canvas context)
+  (doseq [[obj-name obj] (state :objects)]
+    (if (= (get-in state [:info :selected]) obj-name)
+      (set! (.-strokeStyle context) "#f00")
+      (set! (.-strokeStyle context) "#000"))
+    (draw-object obj context))
+  state)

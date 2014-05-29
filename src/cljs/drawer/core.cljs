@@ -4,10 +4,6 @@
             [cljs.core.async :as async :refer [put! chan >! <! close! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-(def fps
-  "Run the game at 60 fps"
-  (/ 1000 60))
-
 (def canvas
   "The canvas dom element."
   (.getElementById js/document "canvas"))
@@ -19,17 +15,6 @@
 (def controls
   "The controls dom element."
   (.getElementById js/document "controls"))
-
-(defn redraw-canvas
-  "Redraws the screen once."
-  [state]
-  (canvas/clear canvas context)
-  (doseq [[obj-name obj] (state :objects)]
-    (if (= (get-in state [:info :selected]) obj-name)
-      (set! (.-strokeStyle context) "#f00")
-      (set! (.-strokeStyle context) "#000"))
-    (canvas/draw-object obj context))
-  state)
 
 (def ^:private user-channel (chan))
 
@@ -64,7 +49,7 @@
                                :priority true)]
       (recur (-> (action state)
                  canvas/update
-                 redraw-canvas
+                 (canvas/redraw-canvas canvas context)
                  ((condp = chan
                     user-channel (fn [s] (gui/redraw-object-list s))
                     canvas-channel (fn [s] s)))
