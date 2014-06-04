@@ -1,14 +1,14 @@
 (ns drawer.canvas
   (:require [drawer.util :as util]))
 
-;; Stub
+;; TODO: Stub
 (defn- rotate
   "Rotates an object around
   another one."
   [obj objs]
   obj)
 
-;; Stub
+;; TODO: Stub
 (defn- mirror
   "Mirrors an object."
   [obj objs]
@@ -18,7 +18,10 @@
   "Updates the rotation of the objects
   contained in the object list."
   [objs]
-  (util/update-values objs #(rotate % objs))
+  (util/update-values objs
+                      #(if (not-every? zero? (get-in % [:rotation :speed]))
+                         (rotate % objs)
+                         %))
   objs)
 
 
