@@ -1,9 +1,12 @@
 (ns drawer.core
   (:require [drawer.canvas :as canvas]
-            [drawer.gui :as gui]))
+            [drawer.gui :as gui]
+            [cljs.core.async :as async :refer [put! chan >! <! close! timeout alts!]])
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def ^:private fps
-  "Run the game at 60 fps"
+  "The fps the canvas should update
+  the objects with."
   (/ 1000 60))
 
 (def ^:private canvas
@@ -18,67 +21,59 @@
   "The controls dom element."
   (.getElementById js/document "controls"))
 
-(defn set-canvas-size
-  "Set the canvas size to the maximum
-  possible without overflow."
-  []
-  (let [cwidth (.-offsetWidth controls)
-        width  (- (.-innerWidth js/window) (js/parseInt cwidth))
-        height (.-innerHeight js/window)]
-    (.setAttribute canvas "width" (dec width))
-    (.setAttribute canvas "height" height)))
+(def ^:private user-channel (chan))
 
-;; Calling set-canvas-size when the site loads
-(set-canvas-size)
+(defn user-action
+  "Adds an action into the user channel.
+  This applies the action to the current state
+  and updates the gui asynchronously."
+  ([] (put! user-channel identity))
+  ([action] (put! user-channel action)))
 
-;; Setting the canvas size on window resize (window.onresize)
-(set! (.-onresize js/window) set-canvas-size)
+;; Initializing the screen
+(user-action)
 
-(def ^:private user-changes
-  "A list of functions to be
-  applied to the state on the
-  next frame - cleared afterwards."
-  (atom '()) )
+(def ^:private canvas-channel (chan))
 
-(defn add-change
-  "Adds a function to the list of
-  changes to be applied to the state."
-  [a]
-  (swap! user-changes conj a))
+(defn canvas-action
+  "Adds an action into the canvas channel.
+  This applies the action to the current state
+  and updates the gui asynchronously."
+  ([] (put! canvas-channel identity))
+  ([action] (put! canvas-channel action)))
 
-(defn- apply-user-changes
-  "Applies the user changes to given
-  state and clears out the changes to
-  be run through."
+(defn- post-canvas-update
+  "Checks whether the canvas requires
+  an update, and posts a new event on
+  the canvas channel after core/fps
+  if it does, updating the canvas."
   [state]
-  (if (peek @user-changes)
-    (let [res-state ((apply comp @user-changes) state)]
-      (reset! user-changes '())
-      (gui/redraw-object-list res-state)
-      res-state)
+  (let [objs (state :objects)
+        update-fns (for [[obj-name obj]
+                         (filter #(canvas/requires-update? (second %)) objs)]
+                     (fn [s] (assoc-in s
+                                      [:objects obj-name]
+                                      (canvas/update-object (get-in s [:objects obj-name])
+                                                            (s :objects)))))]
+    (if (not-empty update-fns)
+      (go (<! (timeout fps))
+          (canvas-action (apply comp update-fns))))
     state))
 
-
-(defn- redraw-screen
-  "Redraws the screen once."
-  [state]
-  (canvas/clear canvas context)
-  (doseq [[obj-name obj] (state :objects)]
-    (if (= (get-in state [:info :selected]) obj-name)
-      (set! (.-strokeStyle context) "#f00")
-      (set! (.-strokeStyle context) "#000"))
-    (canvas/draw-object obj context)))
-
-(defn- run-loop
-  "Runs the redrawing loop."
-  [state]
-  (.setTimeout js/window (fn [] (run-loop (-> state
-                                             apply-user-changes
-                                             canvas/update))) fps)
-  (redraw-screen state))
-
-(defn ^:export startLoop
-  "Initially starts the redraw-loop."
-  []
-  (run-loop {:objects {}
-             :info {:selected :none}}))
+;; This could be called the "game loop".
+;; Based on core.async channels, this updates
+;; the necessary parts of the gui whenever
+;; something updates a channel.
+(go
+  (loop [state {:objects {}
+                :info {:selected :none}}]
+    (let [[action chan] (alts! [user-channel
+                                canvas-channel]
+                               :priority true)]
+      (recur (-> (action state)
+                 (canvas/redraw-canvas canvas context)
+                 post-canvas-update
+                 ((condp = chan
+                    user-channel (fn [s] (gui/redraw-object-list s))
+                    canvas-channel (fn [s] s)))
+                 )))))
