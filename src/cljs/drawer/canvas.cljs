@@ -1,29 +1,53 @@
 (ns drawer.canvas
-  (:require [drawer.util :as util]))
+  (:require [drawer.util :as util]
+            [drawer.math :as math]))
 
-;; TODO: Stub
+(defn- vector-from-to
+  "Returns the vector that starts
+  at p1 and ends at p2"
+  [p1 p2]
+  (mapv - p2 p1))
+
+(defn- dot-product
+  "Builds the dot product from
+  two points/vertices."
+  [p1 p2]
+  (->> (map vector p1 p2)
+       (map #(reduce * %) )
+       (reduce +)))
+
+(defn- obj-center
+  "Find the center of the object
+  from the average of its points."
+  [{:keys [points]}]
+  (->> (apply map vector points)
+       (mapv #(reduce + %) )
+       (mapv #(/ % (count points)))))
+
+;; TODO: Only rotates 2D points!
+(defn- rotate-point
+  [point center deg]
+  (let [dxs (vector-from-to center point)
+        angle (math/deg-to-rad deg)
+        nx (- (* (dxs 0) (math/cos angle)) (* (dxs 1) (math/sin angle)))
+        ny (+ (* (dxs 0) (math/sin angle)) (* (dxs 1) (math/cos angle)))]
+    [(+ nx (center 0)) (+ ny (center 1)) (point 2) (point 3)]))
+
+;; TODO: This is just a test-implementation
 (defn- rotate
   "Rotates an object around
   another one."
   [obj objs]
-  obj)
+  (let [center (obj-center obj)
+        npoints (mapv #(rotate-point % center ((get-in obj [:rotation :speed]) 0))
+                      (obj :points))]
+    (assoc-in obj [:points] npoints)))
 
 ;; TODO: Stub
 (defn- mirror
   "Mirrors an object."
   [obj objs]
   obj)
-
-(defn- rotate-objects
-  "Updates the rotation of the objects
-  contained in the object list."
-  [objs]
-  (util/update-values objs
-                      #(if (not-every? zero? (get-in % [:rotation :speed]))
-                         (rotate % objs)
-                         %))
-  objs)
-
 
 ;; TODO: This is a stub
 (defn- P4->P3
@@ -53,37 +77,6 @@
   (assoc-in obj
             [:points2d]
             (mapv project-point (obj :points))))
-
-(defn- project-objects
-  "Updates the 2D points of the
-  objects in the object list."
-  [objs]
-  (util/update-values objs project-obj))
-
-(defn update
-  "Updates given state with
-  the stuff happening on the
-  canvas."
-  [state]
-  (assoc-in state [:objects] (-> (state :objects)
-                                 rotate-objects
-                                 project-objects)))
-
-(defn- dot-product
-  "Builds the dot product from
-  two points/vertices."
-  [p1 p2]
-  (->> (map vector p1 p2)
-       (map #(reduce * %) )
-       (reduce +)))
-
-(defn- obj-center
-  "Find the center of the object
-  from the average of its points."
-  [{:keys [points]}]
-  (->> (apply map vector points)
-       (mapv #(reduce + %) )
-       (mapv #(/ % (count points)))))
 
 (defn- draw-center
   "Draws a circle in the center of
@@ -135,3 +128,20 @@
       (set! (.-strokeStyle context) "#000"))
     (draw-object obj context))
   state)
+
+(defn requires-update?
+  "Returns whether given object
+  requires an update on the next
+  redraw or not."
+  [obj]
+  (or (not-every? zero? (get-in obj [:rotation :speed]))
+      false))
+
+(defn update-object
+  "Updates given object by applying
+  any necessary functions to it, like
+  rotating, and then updates its 2d points."
+  [obj objs]
+  (-> obj
+      (rotate objs)
+      project-obj))
