@@ -1,6 +1,6 @@
 function setRotation() {
     var speed = document.getElementById("test-rot-speed").value;
-    drawer.api.setRotation(parseInt(speed));
+    drawer.api.setRotation(parseInt(speed) || 0);
 }
 
 function printState() {
