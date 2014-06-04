@@ -49,7 +49,7 @@
   if it does, updating the canvas."
   [state]
   (let [objs (state :objects)
-        update-fns (for [[obj-name obj]
+        update-fns (for [[obj-name _]
                          (filter #(canvas/requires-update? (second %)) objs)]
                      (fn [s] (assoc-in s
                                       [:objects obj-name]
