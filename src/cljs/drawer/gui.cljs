@@ -17,6 +17,13 @@
     (set! (-> overlay (.-style) (.-display)) "none")
     (set! (.-innerHTML prompt) "")))
 
+(defn- set-test-objects
+  "Temporary - sets the test objects values."
+  [state]
+  (let [selected (get-in state [:info :selected])]
+    (set! (.-value (util/element-by-id "test-rot-speed"))
+          (* 100 (get-in state [:objects selected :rotation :speed 0])))))
+
 (defn redraw-object-list
   "Redraws the list of objects and buttons"
   [state]
@@ -25,10 +32,11 @@
               :let [selected? (= obj-name (get-in state [:info :selected]))]]
           (str "<li>"
                (util/construct-htag
-                 "a", obj-name,
-                 "href" "#",
-                 "id" (if selected? "selected-obj" nil),
-                 "onclick" (str "drawer.api.setSelected(&#39;" obj-name "&#39;)"))
+                "a", obj-name,
+                "href" "#",
+                "id" (if selected? "selected-obj" nil),
+                "onclick" (str "drawer.api.setSelected(&#39;" obj-name "&#39;)"))
                "</li>"))]
     (util/set-dom! "object-list" (str "<ul>" (apply str object-list) "</ul>")))
+  (set-test-objects state)
   state)
