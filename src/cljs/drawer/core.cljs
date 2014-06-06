@@ -7,7 +7,7 @@
 (def ^:private fps
   "The fps the canvas should update
   the objects with."
-  (/ 1000 100))
+  (/ 1000 60))
 
 (def ^:private canvas
   "The canvas dom element."
