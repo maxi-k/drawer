@@ -22,7 +22,9 @@
   [state]
   (let [selected (get-in state [:info :selected])]
     (set! (.-value (util/element-by-id "test-rot-speed"))
-          (* 100 (get-in state [:objects selected :rotation :speed 0])))))
+          (* 100 (get-in state [:objects selected :rotation :speed 0])))
+    (set! (.-value (util/element-by-id "test-rot-center"))
+          (get-in state [:objects selected :rotation :center]))))
 
 (defn redraw-object-list
   "Redraws the list of objects and buttons"

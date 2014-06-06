@@ -38,10 +38,13 @@
         </a>
         <hr />
         <p>Rotation des gew&auml;hlten Objektes bestimmen:</p>
+        <input id="test-rot-center" type="text" name="center"
+               placeholder="Rotationszentrum" />
+
         <input id="test-rot-speed" type="text" name="deg"
                placeholder="&Delta;&phi; / frame / 100" />
         <p></p>
-        <a class="button" href="#" onclick="setRotation();">Setzen!</a>
+        <a class="button" href="#" onclick="drawer.api.setRotation();">Setzen!</a>
         <hr />
         <a class="button" href="#" onclick="printState();">Programmstatus</a>
       </div>
@@ -49,6 +52,5 @@
     <canvas id="canvas"></canvas>
     <div class="clearfloat"></div>
     <script src="js/drawer.min.js"></script>
-    <script type="text/javascript" src="js/helpers.js"></script>
   </body>
 </html>

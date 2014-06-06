@@ -38,7 +38,10 @@
   "Rotates an object around
   another one."
   [obj objs]
-  (let [center (obj-center obj)
+  (let [rot-cent (get-in obj [:rotation :center])
+        center (if (= ":" (.charAt rot-cent 0))
+                 (obj-center obj)
+                 (obj-center (objs rot-cent)))
         npoints (mapv #(rotate-point % center ((get-in obj [:rotation :speed]) 0))
                       (obj :points))]
     (assoc-in obj [:points] npoints)))
