@@ -115,11 +115,12 @@
 
 (defn create-object
   "Creates a canvas object."
-  [points]
-  {:points points
-   :points2d (mapv project-point points)
-   :rotation {:speed [0 0 0 0]
-              :center "Eigenes Zentrum"}})
+  ([points] (create-object points "Eigenes Zentrum" 0))
+  ([points center speed]
+     {:points points
+      :points2d (mapv project-point points)
+      :rotation {:speed [speed 0 0 0]
+                 :center center}}))
 
 (defn redraw-canvas
   "Redraws the screen once."

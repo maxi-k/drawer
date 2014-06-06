@@ -7,11 +7,14 @@
 
 (defn ^:export addObject
   "Adds an object to the object list."
-  [obj-name points]
-  (core/user-action (fn [state]
-                      (assoc-in state
-                                [:objects obj-name]
-                                (canvas/create-object (js->clj points))))))
+  ([obj-name points] (addObject obj-name points "Eigenes Zentrum" 0))
+  ([obj-name points rot-speed] (addObject obj-name points "Eigenes Zentrum" rot-speed))
+  ([obj-name points rot-center rot-speed]
+     (core/user-action (fn [state]
+                         (assoc-in
+                          state
+                          [:objects obj-name]
+                          (canvas/create-object (js->clj points) rot-center rot-speed))))))
 
 ;; This is just for testing purposes
 (defn set-rotation
@@ -31,7 +34,7 @@
   "Sets the rotation for current element."
   []
   (let [center (.-value (util/element-by-id "test-rot-center"))
-        speed (js/parseInt (.-value (util/element-by-id "test-rot-speed")))]
+        speed (js/parseFloat (.-value (util/element-by-id "test-rot-speed")))]
     (set-rotation center speed)))
 
 (defn ^:export printState
@@ -43,8 +46,8 @@
 (defn ^:export addChange [f] (core/user-action f))
 
 ;; TEMPORARY
-(addObject "Linie" [[100 100 0 0] [150 300 0 0]])
-(addObject "Dreieck" [[300 200 0 0] [400 400 0 0] [200 400 0 0]])
+(addObject "Linie" [[500 300 0 0] [450 500 0 0]] "Dreieck" 0.75)
+(addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] 0.2)
 
 (defn ^:export setSelected
   "Sets the currently selected object."
