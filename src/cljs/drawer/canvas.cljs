@@ -39,9 +39,9 @@
   another one."
   [obj objs]
   (let [rot-cent (get-in obj [:rotation :center])
-        center (if (= ":" (.charAt rot-cent 0))
-                 (obj-center obj)
-                 (obj-center (objs rot-cent)))
+        center (if (contains? objs rot-cent)
+                 (obj-center (objs rot-cent))
+                 (obj-center obj))
         npoints (mapv #(rotate-point % center ((get-in obj [:rotation :speed]) 0))
                       (obj :points))]
     (assoc-in obj [:points] npoints)))
@@ -119,7 +119,7 @@
   {:points points
    :points2d (mapv project-point points)
    :rotation {:speed [0 0 0 0]
-              :center :self}})
+              :center "Eigenes Zentrum"}})
 
 (defn redraw-canvas
   "Redraws the screen once."
