@@ -97,13 +97,23 @@
   (let [points (obj :points2d)
         start (points 0)]
     (.beginPath ctx)
-    (.moveTo ctx (start 0) (start 1))
-    (doseq [point points]
-      (.lineTo ctx (point 0) (point 1)))
-    (.lineTo ctx (start 0) (start 1))
-    (.stroke ctx)
-    (.closePath ctx)
-    (draw-center obj ctx)))
+    (condp = (count points)
+      1 (do (.arc ctx (start 0) (start 1) 2 0 (* 2 (.-PI js/Math)))
+            (.stroke ctx)
+            (.closePath ctx))
+      2 (do (.moveTo ctx (start 0) (start 1))
+            (.lineTo ctx ((points 1) 0) ((points 1) 1))
+            (.stroke ctx)
+            (.closePath ctx)
+            (draw-center obj ctx))
+      ;; More than 2 points
+      (do (.moveTo ctx (start 0) (start 1))
+          (doseq [point points]
+            (.lineTo ctx (point 0) (point 1)))
+          (.lineTo ctx (start 0) (start 1))
+          (.stroke ctx)
+          (.closePath ctx)
+          (draw-center obj ctx)))))
 
 (defn- clear
   "Clear the canvas but keep its settings."
