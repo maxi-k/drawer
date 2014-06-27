@@ -16,6 +16,11 @@
                           [:objects obj-name]
                           (canvas/create-object (js->clj points) rot-center rot-speed))))))
 
+(defn ^:export removeObject
+  "Removes an object from the object list."
+  [obj-name]
+  (core/user-action (fn [state] (update-in state [:objects] dissoc obj-name))))
+
 ;; This is just for testing purposes
 (defn set-rotation
   "Sets the rotation for current."
@@ -46,8 +51,9 @@
 (defn ^:export addChange [f] (core/user-action f))
 
 ;; TEMPORARY
+(addObject "Punkt" [[450 300 0 0]] "Linie" 0.4)
 (addObject "Linie" [[500 300 0 0] [450 500 0 0]] "Dreieck" 0.75)
-(addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] 0.2)
+(addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] -0.2)
 
 (defn ^:export setSelected
   "Sets the currently selected object."

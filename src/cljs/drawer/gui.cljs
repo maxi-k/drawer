@@ -36,8 +36,17 @@
                (util/construct-htag
                 "a", obj-name,
                 "href" "#",
+                "class" "obj-button"
                 "id" (if selected? "selected-obj" nil),
                 "onclick" (str "drawer.api.setSelected(&#39;" obj-name "&#39;)"))
+               (util/construct-htag
+                "a", "&mdash;"
+                "href" "#"
+                "class" "left-bordered"
+                "onclick" (str "drawer.api.removeObject(&#39" obj-name "&#39;)"))
+               (util/construct-htag
+                "div", ""
+                "class" "clearfloat")
                "</li>"))]
     (util/set-dom! "object-list" (str "<ul>" (apply str object-list) "</ul>")))
   (set-test-objects state)

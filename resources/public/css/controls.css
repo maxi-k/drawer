@@ -11,8 +11,12 @@
   overflow:scroll;
 }
 
+#object-list li a.obj-button {
+  width: 210px;
+}
+
 #object-list li a {
-  display: block;
+  float: left;
   margin: 0;
   padding:5px;
   color:#000;

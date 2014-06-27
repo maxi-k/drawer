@@ -51,10 +51,13 @@
   (let [objs (state :objects)
         update-fns (for [[obj-name _]
                          (filter #(canvas/requires-update? (second %)) objs)]
-                     (fn [s] (assoc-in s
-                                      [:objects obj-name]
-                                      (canvas/update-object (get-in s [:objects obj-name])
-                                                            (s :objects)))))]
+                     (fn [s] (if (contains? (s :objects) obj-name)
+                              (assoc-in s
+                                        [:objects obj-name]
+                                        (canvas/update-object
+                                         (get-in s [:objects obj-name])
+                                         (s :objects)))
+                              s)))]
     (if (not-empty update-fns)
       (go (<! (timeout fps))
           (canvas-action (apply comp update-fns))))
