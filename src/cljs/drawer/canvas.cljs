@@ -2,19 +2,6 @@
   (:require [drawer.util :as util]
             [drawer.math :as math]))
 
-(defn- vector-from-to
-  "Returns the vector that starts
-  at p1 and ends at p2"
-  [p1 p2]
-  (mapv - p2 p1))
-
-(defn- dot-product
-  "Builds the dot product from
-  two points/vertices."
-  [p1 p2]
-  (->> (map vector p1 p2)
-       (map #(reduce * %) )
-       (reduce +)))
 
 (defn- obj-center
   "Find the center of the object
@@ -27,7 +14,7 @@
 ;; TODO: Only rotates 2D points!
 (defn- rotate-point
   [point center deg]
-  (let [dxs (vector-from-to center point)
+  (let [dxs (math/vector-from-to center point)
         angle (math/deg-to-rad deg)
         nx (- (* (dxs 0) (math/cos angle)) (* (dxs 1) (math/sin angle)))
         ny (+ (* (dxs 0) (math/sin angle)) (* (dxs 1) (math/cos angle)))]
