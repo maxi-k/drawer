@@ -4,6 +4,7 @@
   (:require-macros [hiccups.core :as h]))
 
 (def ^:private object-list
+  "Component representing the object-list."
   {:update? #(or
               (not= (keys (%1 :objects)) (keys (%2 :objects)))
               (not= (get-in %1 [:info :selected])
@@ -20,14 +21,16 @@
                      :id (if selected? "selected-obj" nil)
                      :onclick (str "api.setSelected('" obj-name "')")}
                     obj-name]
-                   [:a.left-bordered
-                    {:href "#"
-                     :class "left-bordered obj-remove-button"
-                     :onclick (str "api.removeObject('" obj-name "')")}
-                    "&mdash;"]
                    [:div.clearfloat]])))})
 
+(def ^:private object-editor-title
+  "Component representing the title of the object-editor."
+  {:update? #(not= (get-in %1 [:info :selected] (get-in %2 [:info :selected])))
+   :super-elem (util/element-by-id "object-editor-title")
+   :get-html (fn [state] (get-in state [:info :selected]))})
+
 (def ^:private control-tabs
+  "Component representing the tabs in the object-control."
   {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
    :super-elem (util/element-by-id "control-tabs")
    :get-html (fn [state]
@@ -38,9 +41,30 @@
                    [:a {:href "#"
                         :onclick (str "api.setActiveTab('" (clj->js key) "')")} name]])))})
 
+;; Todo: Stub
+(def ^:private object-info
+  "Component representing the content of the info tab."
+  {:update? #(constantly false)
+   :super-elem (util/element-by-id "object-info")
+   :get-html ""})
+
+;; Todo: Stub
+(def ^:private object-rotation
+  "Component representing the content of the rotation tab."
+  {:update? #(constantly false)
+   :super-elem (util/element-by-id "object-rotation")
+   :get-html ""})
+
+;; Todo: Stub
+(def ^:private object-mirroring
+  "Component representing the content of the mirroring tab."
+  {:update? #(constantly false)
+   :super-elem (util/element-by-id "object-mirroring")
+   :get-html ""})
+
 (def components
   "All components that should be rendered."
-  [object-list control-tabs])
+  [object-list control-tabs object-editor-title])
 
 (defn update-view
   "Re-renders respective gui elements if necessary."

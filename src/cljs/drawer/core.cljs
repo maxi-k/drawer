@@ -64,9 +64,10 @@
 ;; Based on core.async channels, this updates
 ;; the necessary parts of the gui whenever
 ;; something updates a channel.
-(def initial-state {:objects {}
-                    :info {:selected :none
-                           :active-tab :info}})
+(def initial-state {:info {:selected "Nichts Ausgewählt"
+                           :active-tab :info}
+                    :objects {}
+                    :pending-object {:name "" :object {}}})
 
 (go (loop [state initial-state]
       (let [[action _] (alts! [user-channel
