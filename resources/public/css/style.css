@@ -4,22 +4,13 @@
 
 html, body {
     height: 100%;
+    font-size: 16px;
 }
 
 h2 {
     margin: 0 0 15px 0;
     padding: 10px 0 5px 0;
     border-bottom: 1px solid #333;
-}
-
-#controls {
-    display: table;
-    float: left;
-    width: 255px;
-    height: 100%;
-    margin: 0;
-    padding: 0 10px;
-    background-color: #EEE;
 }
 
 #canvas {
