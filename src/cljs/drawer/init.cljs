@@ -1,8 +1,7 @@
 (ns drawer.init
   (:require [drawer.core :as core]
             [drawer.util :as util]
-            [drawer.gui :as gui]
-            [drawer.data :as data]))
+            [drawer.gui :as gui]))
 
 (defn- set-canvas-size
   "Set the canvas size to the maximum
