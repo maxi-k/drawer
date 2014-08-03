@@ -1,5 +1,6 @@
 #controls {
   display:table;
+  position:fixed;
   float:left;
   width:255px;
   height:100%;
@@ -9,10 +10,17 @@
   box-shadow:1px 0 3px rgba(0, 0, 0, 0.25);
 }
 
+.dropdown {
+  position:absolute;
+  background-color:#FEFEFE;
+  padding:7px;
+  border-radius:2px;
+  box-shadow:0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 #object-list {
   display:block;
   height:135px;
-  width:255px;
   margin:10px 0 0 0;
   padding:0;
   list-style:none;
@@ -20,21 +28,13 @@
 }
 
 #object-list li a {
-  float:left;
+  display: block;
   margin:0;
   padding:5px;
   color:#000;
   background-color:#fff;
   border-bottom:1px solid #AAA;
   text-decoration:none;
-}
-
-.obj-button {
-  width:210px;
-}
-
-.obj-remove-button {
-  max-width: 25px;
 }
 
 #selected-obj {

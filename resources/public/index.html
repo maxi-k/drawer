@@ -21,6 +21,17 @@
     <div id="controls">
       <h2>Zeichner</h2>
       <div class="control-segment">
+        <div style="overflow:visible; position:relative;">
+          <a class="button" href="#" onclick="api.toggleDropdown('general-options-dropdown')"
+             title="Optionen" style="padding:4px 4px 0px 4px;">
+            <img src="img/gear.png" alt="gear" width="20px"
+                 height="20px" />
+          </a>
+          <div class="dropdown" id="general-options-dropdown"
+               style="display:none;top:20px;left:20px;">
+
+          </div>
+        </div>
         <ul id="object-list"> </ul>
       </div>
       <div class="control-segment" id="object-editor">
@@ -28,7 +39,6 @@
         <h3 id="object-editor-title"></h3>
 
         <ul id="control-tabs">
-
         </ul>
 
         <div id="object-info"></div>

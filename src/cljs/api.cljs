@@ -50,3 +50,16 @@
   [active]
   (core/user-action (fn [state]
                       (assoc-in state [:info :active-tab] (keyword active)))))
+
+(defn ^:export toggleDropdown
+  "Toggles the dropdown menu of the options button."
+  [elem-id]
+  (let [dropdown-div (util/element-by-id elem-id)
+        style (.-display (.-style dropdown-div))]
+    (if (= "none" style)
+      (do
+        (set! (.-display (.-style dropdown-div)) "block")
+        (set! (.-onmouseup js/window) #(toggleDropdown elem-id)))
+      (do
+        (set! (.-display (.-style dropdown-div)) "none")
+        (set! (.-onmouseup js/window) nil)))))
