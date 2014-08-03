@@ -24,10 +24,18 @@
                               state objs))))
 
 (defn ^:export removeObject
-  "Removes an object from the object list."
+  "Removes an object from the object list
+  after confirming."
   [obj-name]
-  (if (js/confirm "Objekt löschen?")
+  (if (js/confirm "Objekt entfernen?")
     (core/user-action (fn [state] (update-in state [:objects] dissoc obj-name)))))
+
+(defn ^:export removeAllObjects
+  "Removes all objects from the object list
+  after confirming."
+  []
+  (if (js/confirm "Alle Objekte entfernen?")
+    (core/user-action (fn [state] (assoc state :objects {})))))
 
 (defn ^:export printState
   "Alerts the current state map."

@@ -23,14 +23,29 @@
                     obj-name]
                    [:div.clearfloat]])))})
 
-(def ^:private object-editor-title
-  "Component representing the title of the object-editor."
-  {:update? #(not= (get-in %1 [:info :selected] (get-in %2 [:info :selected])))
-   :super-elem (util/element-by-id "object-editor-title")
+(def ^:private object-controls-title
+  "Component representing the title of the object-controls."
+  {:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
+   :super-elem (util/element-by-id "object-controls-title")
    :get-html (fn [state] (get-in state [:info :selected]))})
 
+(def ^:private object-dropdown
+  "Component representing the dropdown menu of the object-controls."
+  {:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
+   :super-elem (util/element-by-id "object-dropdown")
+   :get-html (fn [state]
+               (let [selected (get-in state [:info :selected])
+                     slct-str (str "'" selected "'")]
+                 (if (= selected "Nichts Ausgewählt")
+                   (h/html [:ul [:li [:a "Bitte zuerst ein Objekt auswählen!"]]])
+                   (h/html
+                    [:ul
+                     [:li [:a {:href "#"
+                               :onclick (str "api.removeObject(" slct-str ")")}
+                           (str slct-str " entfernen")]]]))))})
+
 (def ^:private control-tabs
-  "Component representing the tabs in the object-control."
+  "Component representing the tabs in the object-controls."
   {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
    :super-elem (util/element-by-id "control-tabs")
    :get-html (fn [state]
@@ -64,7 +79,8 @@
 
 (def components
   "All components that should be rendered."
-  [object-list control-tabs object-editor-title])
+  [object-list control-tabs object-controls-title
+   object-dropdown])
 
 (defn update-view
   "Re-renders respective gui elements if necessary."
