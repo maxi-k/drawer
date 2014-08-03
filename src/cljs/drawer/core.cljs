@@ -30,9 +30,6 @@
   ([] (put! user-channel identity))
   ([action] (put! user-channel action)))
 
-;; Initializing the screen
-(user-action)
-
 (def ^:private canvas-channel (chan))
 
 (defn canvas-action
@@ -42,7 +39,7 @@
   ([] (put! canvas-channel identity))
   ([action] (put! canvas-channel action)))
 
-(defn- post-canvas-update
+(defn- put-canvas-update
   "Checks whether the canvas requires
   an update, and posts a new event on
   the canvas channel after core/fps
@@ -67,16 +64,16 @@
 ;; Based on core.async channels, this updates
 ;; the necessary parts of the gui whenever
 ;; something updates a channel.
-(go
-  (loop [state {:objects {}
-                :info {:selected :none}}]
-    (let [[action chan] (alts! [user-channel
-                                canvas-channel]
-                               :priority true)]
-      (recur (-> (action state)
-                 (canvas/redraw-canvas canvas context)
-                 post-canvas-update
-                 ((condp = chan
-                    user-channel (fn [s] (gui/redraw-object-list s))
-                    canvas-channel (fn [s] s)))
-                 )))))
+(def initial-state {:objects {}
+                    :info {:selected :none
+                           :active-tab :info}})
+
+(go (loop [state initial-state]
+      (let [[action _] (alts! [user-channel
+                               canvas-channel]
+                              :priority true)
+            new-state (-> (action state)
+                          (canvas/redraw-canvas canvas context)
+                          put-canvas-update)]
+        (gui/update-view new-state state)
+        (recur new-state))))

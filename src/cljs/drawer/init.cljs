@@ -1,5 +1,8 @@
 (ns drawer.init
-  (:require [drawer.core :as core]))
+  (:require [drawer.core :as core]
+            [drawer.util :as util]
+            [drawer.gui :as gui]
+            [drawer.data :as data]))
 
 (defn- set-canvas-size
   "Set the canvas size to the maximum
@@ -17,3 +20,7 @@
 
 ;; Setting the canvas size on window resize (window.onresize)
 (set! (.-onresize js/window) set-canvas-size)
+
+;; Initially draw all gui-components
+(doseq [component gui/components]
+  (util/set-dom! (component :super-elem) ((component :get-html) core/initial-state)))

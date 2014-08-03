@@ -1,53 +1,50 @@
 (ns drawer.gui
-  (:require [drawer.util :as util]))
+  (:require [drawer.util :as util]
+            [hiccups.runtime :as hr])
+  (:require-macros [hiccups.core :as h]))
 
-(defn display-prompt
-  "Displays a prompt for user input."
-  [content]
-  (let [overlay (util/element-by-id "prompt-overlay")
-        prompt (util/element-by-id "prompt")]
-    (set! (-> overlay (.-style) (.-display)) "block")
-    (set! (.-innerHTML prompt) (apply str content))))
+(def ^:private object-list
+  {:update? #(or
+              (not= (keys (%1 :objects)) (keys (%2 :objects)))
+              (not= (get-in %1 [:info :selected])
+                    (get-in %2 [:info :selected])))
+   :super-elem (util/element-by-id "object-list")
+   :get-html (fn [state]
+               (h/html
+                (for [obj-name (keys (state :objects))
+                      :let [selected?
+                            (= obj-name (get-in state [:info :selected]))]]
+                  [:li
+                   [:a.obj-button
+                    {:href "#"
+                     :id (if selected? "selected-obj" nil)
+                     :onclick (str "api.setSelected('" obj-name "')")}
+                    obj-name]
+                   [:a.left-bordered
+                    {:href "#"
+                     :class "left-bordered obj-remove-button"
+                     :onclick (str "api.removeObject('" obj-name "')")}
+                    "&mdash;"]
+                   [:div.clearfloat]])))})
 
-(defn close-prompt
-  "Closes the user prompt."
-  []
-  (let [overlay (util/element-by-id "prompt-overlay")
-        prompt (util/element-by-id "prompt")]
-    (set! (-> overlay (.-style) (.-display)) "none")
-    (set! (.-innerHTML prompt) "")))
+(def ^:private control-tabs
+  {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
+   :super-elem (util/element-by-id "control-tabs")
+   :get-html (fn [state]
+               (h/html
+                (for [[key name] {:info "Info" :rot "Drehung" :mir "Spiegelung"}
+                      :let [selected? (= key (get-in state [:info :active-tab]))]]
+                  [:li.tab {:id (if selected? "selected-tab" nil)}
+                   [:a {:href "#"
+                        :onclick (str "api.setActiveTab('" (clj->js key) "')")} name]])))})
 
-(defn- set-test-objects
-  "Temporary - sets the test objects values."
-  [state]
-  (let [selected (get-in state [:info :selected])]
-    (set! (.-value (util/element-by-id "test-rot-speed"))
-          (* 100 (get-in state [:objects selected :rotation :speed 0])))
-    (set! (.-value (util/element-by-id "test-rot-center"))
-          (get-in state [:objects selected :rotation :center]))))
+(def components
+  "All components that should be rendered."
+  [object-list control-tabs])
 
-(defn redraw-object-list
-  "Redraws the list of objects and buttons"
-  [state]
-  (let [object-list
-        (for [[obj-name obj] (state :objects)
-              :let [selected? (= obj-name (get-in state [:info :selected]))]]
-          (str "<li>"
-               (util/construct-htag
-                "a", obj-name,
-                "href" "#",
-                "class" "obj-button"
-                "id" (if selected? "selected-obj" nil),
-                "onclick" (str "drawer.api.setSelected(&#39;" obj-name "&#39;)"))
-               (util/construct-htag
-                "a", "&mdash;"
-                "href" "#"
-                "class" "left-bordered"
-                "onclick" (str "drawer.api.removeObject(&#39" obj-name "&#39;)"))
-               (util/construct-htag
-                "div", ""
-                "class" "clearfloat")
-               "</li>"))]
-    (util/set-dom! "object-list" (str "<ul>" (apply str object-list) "</ul>")))
-  (set-test-objects state)
-  state)
+(defn update-view
+  "Re-renders respective gui elements if necessary."
+  [new-state old-state]
+  (doseq [component components]
+    (if ((component :update?) new-state old-state)
+      (util/set-dom! (component :super-elem) ((component :get-html) new-state)))))
