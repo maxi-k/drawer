@@ -32,7 +32,7 @@
 
 (def ^:private canvas-channel (chan))
 
-(defn canvas-action
+(defn- canvas-action
   "Adds an action into the canvas channel.
   This applies the action to the current state
   and updates the gui asynchronously."
@@ -55,20 +55,27 @@
                                          (get-in s [:objects obj-name])
                                          (s :objects)))
                               s)))]
-    (if (not-empty update-fns)
-      (go (<! (timeout fps))
-          (canvas-action (apply comp update-fns))))
-    state))
+    (if (empty? update-fns)
+      state
+      ((apply comp update-fns) state))))
 
-;; This could be called the "game loop".
-;; Based on core.async channels, this updates
-;; the necessary parts of the gui whenever
-;; something updates a channel.
-(def initial-state {:info {:selected "Nichts Ausgewählt"
-                           :active-tab :info}
-                    :objects {}
-                    :pending-object {:name "" :object {}}})
+;; "The game loop"
+;; Puts a canvas update onto
+;; the channel every [fps] seconds
+(go (while true (<! (timeout fps)
+                    (canvas-action put-canvas-update))))
 
+(def initial-state
+  "The state of the program when it first starts."
+  {:info {:selected "Nichts Ausgewählt"
+          :active-tab :info}
+   :objects {}
+   :pending-object {:name "" :object {}}})
+
+;; Holds the state of the program
+;; and updates the view everytime
+;; it recieves a change from one
+;; of the channels
 (go (loop [state initial-state]
       (let [[action _] (alts! [user-channel
                                canvas-channel]
