@@ -23,6 +23,11 @@
                                 assoc-in new-state [:objects obj-name] obj)
                               state objs))))
 
+;; TEMPORARY
+(addObject "Punkt" [[450 300 0 0]] "Linie" 0.4)
+(addObject "Linie" [[500 300 0 0] [450 500 0 0]] "Dreieck" 0.75)
+(addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] -0.2)
+
 (defn ^:export removeObject
   "Removes an object from the object list
   after confirming."
@@ -42,16 +47,22 @@
   []
   (core/user-action (fn [state] (js/alert state) state)))
 
-;; TEMPORARY
-(addObject "Punkt" [[450 300 0 0]] "Linie" 0.4)
-(addObject "Linie" [[500 300 0 0] [450 500 0 0]] "Dreieck" 0.75)
-(addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] -0.2)
-
 (defn ^:export setSelected
   "Sets the currently selected object."
   [obj-name]
   (core/user-action (fn [state]
                       (assoc-in state [:info :selected] obj-name))))
+
+(defn ^:export setRotationOnAll
+  "Activates/Deactivates the rotation on all objects."
+  [do-rotate]
+  (core/user-action
+   (fn [state]
+     (let [new-objs (apply merge (for [[obj-name obj] (state :objects)]
+                                   {obj-name (assoc-in obj
+                                                       [:rotation :active]
+                                                       do-rotate)}))]
+       (assoc state :objects new-objs)))))
 
 (defn ^:export setActiveTab
   "Sets the currently active tab."

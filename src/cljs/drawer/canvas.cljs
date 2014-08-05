@@ -85,15 +85,17 @@
         start (points 0)]
     (.beginPath ctx)
     (condp = (count points)
+      ;; Object is single point
       1 (do (.arc ctx (start 0) (start 1) 2 0 (* 2 (.-PI js/Math)))
             (.stroke ctx)
             (.closePath ctx))
+      ;; Object is a line
       2 (do (.moveTo ctx (start 0) (start 1))
             (.lineTo ctx ((points 1) 0) ((points 1) 1))
             (.stroke ctx)
             (.closePath ctx)
             (draw-center obj ctx))
-      ;; More than 2 points
+      ;; Object has more than 2 points
       (do (.moveTo ctx (start 0) (start 1))
           (doseq [point points]
             (.lineTo ctx (point 0) (point 1)))
@@ -116,7 +118,8 @@
   ([points center speed]
      {:points points
       :points2d (mapv project-point points)
-      :rotation {:speed [speed 0 0 0]
+      :rotation {:active true
+                 :speed [speed 0 0 0]
                  :center center}}))
 
 (defn redraw-canvas
@@ -135,8 +138,8 @@
   requires an update on the next
   redraw or not."
   [obj]
-  (or (not-every? zero? (get-in obj [:rotation :speed]))
-      false))
+  (and (get-in obj [:rotation :active])
+       (not-every? zero? (get-in obj [:rotation :speed]))))
 
 (defn update-object
   "Updates given object by applying
