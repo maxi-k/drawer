@@ -69,7 +69,7 @@
 (def initial-state
   "The state of the program when it first starts."
   {:info {:selected "Nichts Ausgewählt"
-          :active-tab :info}
+          :active-tab "info-tab"}
    :objects {}
    :pending-object {:name "" :object {}}})
 

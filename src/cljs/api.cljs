@@ -68,7 +68,7 @@
   "Sets the currently active tab."
   [active]
   (core/user-action (fn [state]
-                      (assoc-in state [:info :active-tab] (keyword active)))))
+                      (assoc-in state [:info :active-tab] active))))
 
 (defn ^:export toggleDropdown
   "Toggles the dropdown menu of the options button."

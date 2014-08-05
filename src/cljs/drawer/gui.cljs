@@ -29,39 +29,38 @@
    :super-elem (util/element-by-id "object-controls-title")
    :get-html (fn [state] (get-in state [:info :selected]))})
 
-(def ^:private object-dropdown
-  "Component representing the dropdown menu of the object-controls."
-  {:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
-   :super-elem (util/element-by-id "object-dropdown")
-   :get-html (fn [state]
-               (let [selected (get-in state [:info :selected])
-                     slct-str (str "'" selected "'")]
-                 (if (= selected "Nichts Ausgewählt")
-                   (h/html [:ul [:li [:a "Bitte zuerst ein Objekt auswählen!"]]])
-                   (h/html
-                    [:ul
-                     [:li [:a {:href "#"
-                               :onclick (str "api.removeObject(" slct-str ")")}
-                           (str slct-str " entfernen")]]]))))})
-
 (def ^:private control-tabs
   "Component representing the tabs in the object-controls."
   {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
    :super-elem (util/element-by-id "control-tabs")
    :get-html (fn [state]
                (h/html
-                (for [[key name] {:info "Info" :rot "Drehung" :mir "Spiegelung"}
-                      :let [selected? (= key (get-in state [:info :active-tab]))]]
+                (for [[id name] {"info-tab" "Info"
+                                 "rotation-tab" "Drehung"
+                                 "mirroring-tab" "Spiegelung"}
+                      :let [selected? (= id (get-in state [:info :active-tab]))]]
                   [:li.tab {:id (if selected? "selected-tab" nil)}
                    [:a {:href "#"
-                        :onclick (str "api.setActiveTab('" (clj->js key) "')")} name]])))})
+                        :onclick (str "api.setActiveTab('" id "')")} name]])))})
 
 ;; Todo: Stub
 (def ^:private object-info
   "Component representing the content of the info tab."
-  {:update? #(constantly false)
+  {:update? #(and (= (get-in %1 [:info :active-tab]) "info-tab")
+                  (or (not= (get-in %1 [:info :active-tab])
+                            (get-in %2 [:info :active-tab]))
+                      (not= (get-in %1 [:info :selected])
+                            (get-in %2 [:info :selected]))
+                      (not= (get-in %1 [:objects (get-in %1 [:info :selected])])
+                            (get-in %1 [:objects (get-in %2 [:info :selected])]))))
    :super-elem (util/element-by-id "object-info")
-   :get-html ""})
+   :get-html (fn [state]
+               (let [selected (get-in state [:info :selected])]
+                 (h/html
+                  [:a.button.dangerous
+                   {:href "#"
+                    :onclick (str "api.removeObject('" selected "')")}
+                   (str selected " entfernen")])))})
 
 ;; Todo: Stub
 (def ^:private object-rotation
@@ -80,11 +79,28 @@
 (def components
   "All components that should be rendered."
   [object-list control-tabs object-controls-title
-   object-dropdown])
+   object-info])
+
+(def updaters
+  "All updaters that should be called."
+  [{:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
+    :do-update (fn [state] (set! (-> (util/element-by-id "object-panels-wrapper") .-style .-display)
+                                (if (= "Nichts Ausgewählt" (get-in state [:info :selected]))
+                                  "none" "block")))}
+   {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
+    :do-update (fn [state] (doseq [[tab panel] {"info-tab" "object-info",
+                                               "rotation-tab" "object-rotation",
+                                               "mirroring-tab" "object-mirroring"}
+                                  :let [selected? (= tab (get-in state [:info :active-tab]))]]
+                            (set! (-> (util/element-by-id panel) .-style .-display)
+                                  (if selected? "block" "none"))))}])
 
 (defn update-view
   "Re-renders respective gui elements if necessary."
   [new-state old-state]
   (doseq [component components]
     (if ((component :update?) new-state old-state)
-      (util/set-dom! (component :super-elem) ((component :get-html) new-state)))))
+      (util/set-dom! (component :super-elem) ((component :get-html) new-state))))
+  (doseq [updater updaters]
+    (if ((updater :update?) new-state old-state)
+      ((updater :do-update) new-state))))

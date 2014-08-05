@@ -58,31 +58,13 @@
 }
 
 #selected-obj {
-    background-color: #9db7fe !important;
+    background-color: #DDD !important;
 }
 
 #object-controls {
     display: block;
     margin: 20px 0 0 0;
     border-top: 1px solid #333;
-}
-
-#object-controls header {
-
-}
-
-#object-controls-title {
-    float: left;
-}
-
-#object-controls-header-controls {
-    overflow:visible;
-    position:relative;
-    float:left;
-}
-
-#object-controls-header-controls .button {
-    margin:15px 0 0 10px;
 }
 
 #control-tabs {
@@ -95,9 +77,8 @@
     background-color: #fff;
     margin-right: 3px;
     list-style: none;
-    border-top: 1px solid #AAA;
-    border-left: 1px solid #AAA;
-    border-right: 1px solid #AAA;
+    border: 1px solid #AAA;
+    border-bottom: none;
 }
 
 .tab a {
@@ -108,5 +89,16 @@
 }
 
 #selected-tab {
-    background-color: #9db7fe !important;
+    background-color: #DDD !important;
+}
+
+#control-panels {
+    display: block;
+    border: 1px solid #AAA;
+    border-top: none;
+    background-color: #DDD;
+}
+
+.object-control-panel {
+    padding: 10px 5px 5px 5px;
 }

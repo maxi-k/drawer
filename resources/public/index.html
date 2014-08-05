@@ -61,30 +61,24 @@
 
 
       <div id="object-controls">
-        <header>
-          <h3 id="object-controls-title"></h3>
-          <div id="object-controls-header-controls">
-            <a class="button" href="#" onclick="api.toggleDropdown('object-dropdown')"
-               title="Optionen" style="padding:4px 4px 0px 4px;">
-              <img src="img/gear.png" alt="gear" width="20px" height="20px" />
-            </a>
-            <div class="dropdown" id="object-dropdown"
-                 style="display:none;top:35px;left:35px;">
 
-            </div>
-          </div>
+        <h3 id="object-controls-title"></h3>
+
+        <div id="object-panels-wrapper" style="display:none;">
+
+          <ul id="control-tabs"></ul>
           <div class="clearfloat"></div>
-        </header>
 
-        <ul id="control-tabs">
-        </ul>
+          <div id="control-panels">
+            <div class="object-control-panel" id="object-info" style="display:block;"></div>
+            <div class="object-control-panel" id="object-rotation" style="display:none;"></div>
+            <div class="object-control-panel" id="object-mirroring" style="display:none;"></div>
+          </div>
 
-        <div id="object-info"></div>
-        <div id="object-rotation"></div>
-        <div id="object-mirroring"></div>
+        </div>
 
-        <div class="clearfloat"></div>
       </div>
+
       <hr />
       <h4>Testfunktionen</h4>
       <a class="button" href="#"
