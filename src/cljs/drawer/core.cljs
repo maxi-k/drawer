@@ -62,8 +62,9 @@
 ;; "The game loop"
 ;; Puts a canvas update onto
 ;; the channel every [fps] seconds
-(go (while true (<! (timeout fps)
-                    (canvas-action put-canvas-update))))
+(go (while true
+      (<! (timeout fps))
+      (canvas-action put-canvas-update)))
 
 (def initial-state
   "The state of the program when it first starts."
