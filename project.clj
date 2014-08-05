@@ -14,4 +14,4 @@
                 :compiler
                 {:output-to "resources/public/js/drawer.min.js"
                  :optimizations :advanced
-                 :pretty-print true}}]})
+                 :pretty-print false}}]})
