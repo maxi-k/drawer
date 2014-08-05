@@ -11,6 +11,7 @@
 }
 
 .dropdown {
+    z-index: 999;
     position: absolute;
     min-width: 220px;
     max-width: 300px;
