@@ -32,7 +32,7 @@
   "Removes an object from the object list
   after confirming."
   [obj-name]
-  (if (js/confirm "Objekt entfernen?")
+  (if (js/confirm (str obj-name " entfernen?"))
     (core/user-action (fn [state] (update-in state [:objects] dissoc obj-name)))))
 
 (defn ^:export removeAllObjects

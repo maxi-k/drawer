@@ -9,4 +9,6 @@ pom.xml.asc
 /.nrepl-port
 test/
 doc/
-out/
+
+out/js/compiler
+*.js.map

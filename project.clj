@@ -8,10 +8,13 @@
                  [org.clojure/core.async "0.1.303.0-886421-alpha"]
                  [hiccups "0.3.0"]]
   :plugins [[lein-cljsbuild "1.0.3"]]
-  :source-paths ["src/clj"]
+  :source-paths ["src/cljs"]
   :cljsbuild {:builds
-              [{:source-paths ["src/cljs"]
+              [{:id "main"
+                :source-paths ["src/cljs"]
                 :compiler
-                {:output-to "resources/public/js/drawer.min.js"
+                {:output-to "out/js/drawer.min.js"
+                 :output-dir "out/js/compiler"
                  :optimizations :advanced
-                 :pretty-print false}}]})
+                 :pretty-print false
+                 :source-map "out/js/drawer.min.js.map"}}]})
