@@ -60,7 +60,6 @@
         (gui/update-view new-state state)
         (recur new-state))))
 
-;; "The canvas loop"
 ;; Puts a canvas update onto
 ;; the channel every [fps] seconds
 (go (while true

@@ -150,9 +150,10 @@
       (rotate objs)
       project-obj))
 
-(defn- get-canvas-update
-  "'Applies' any updates the canvas needs
-  to the state."
+(defn get-canvas-update
+  "Calculates any updates the canvas
+  requires, and applies them to the
+  given state."
   [state]
   (let [objs (state :objects)
         update-fns (for [[obj-name _]
