@@ -32,7 +32,7 @@
 
 (def ^:private canvas-channel (chan))
 
-(defn- canvas-action
+(defn canvas-action
   "Adds an action into the canvas channel.
   This applies the action to the current state
   and updates the gui asynchronously."
