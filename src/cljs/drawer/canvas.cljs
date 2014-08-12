@@ -149,3 +149,21 @@
   (-> obj
       (rotate objs)
       project-obj))
+
+(defn- get-canvas-update
+  "'Applies' any updates the canvas needs
+  to the state."
+  [state]
+  (let [objs (state :objects)
+        update-fns (for [[obj-name _]
+                         (filter #(requires-update? (second %)) objs)]
+                     (fn [s] (if (contains? (s :objects) obj-name)
+                              (assoc-in s
+                                        [:objects obj-name]
+                                        (update-object
+                                         (get-in s [:objects obj-name])
+                                         (s :objects)))
+                              s)))]
+    (if (empty? update-fns)
+      state
+      ((apply comp update-fns) state))))

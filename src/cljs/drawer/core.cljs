@@ -39,33 +39,6 @@
   ([] (put! canvas-channel identity))
   ([action] (put! canvas-channel action)))
 
-(defn- put-canvas-update
-  "Checks whether the canvas requires
-  an update, and posts a new event on
-  the canvas channel after core/fps
-  if it does, updating the canvas."
-  [state]
-  (let [objs (state :objects)
-        update-fns (for [[obj-name _]
-                         (filter #(canvas/requires-update? (second %)) objs)]
-                     (fn [s] (if (contains? (s :objects) obj-name)
-                              (assoc-in s
-                                        [:objects obj-name]
-                                        (canvas/update-object
-                                         (get-in s [:objects obj-name])
-                                         (s :objects)))
-                              s)))]
-    (if (empty? update-fns)
-      state
-      ((apply comp update-fns) state))))
-
-;; "The game loop"
-;; Puts a canvas update onto
-;; the channel every [fps] seconds
-(go (while true
-      (<! (timeout fps))
-      (canvas-action put-canvas-update)))
-
 (def initial-state
   "The state of the program when it first starts."
   {:info {:selected "Nichts Ausgewählt"
@@ -82,7 +55,14 @@
                                canvas-channel]
                               :priority true)
             new-state (-> (action state)
-                          (canvas/redraw-canvas canvas context)
-                          put-canvas-update)]
+                           canvas/get-canvas-update
+                          (canvas/redraw-canvas canvas context))]
         (gui/update-view new-state state)
         (recur new-state))))
+
+;; "The canvas loop"
+;; Puts a canvas update onto
+;; the channel every [fps] seconds
+(go (while true
+      (<! (timeout fps))
+      (canvas-action canvas/get-canvas-update)))
