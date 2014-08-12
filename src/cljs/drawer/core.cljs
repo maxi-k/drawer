@@ -26,7 +26,7 @@
 (defn user-action
   "Adds an action into the user channel.
   This applies the action to the current state
-  and updates the gui asynchronously."
+  and updates the gui."
   ([] (put! user-channel identity))
   ([action] (put! user-channel action)))
 
@@ -35,7 +35,7 @@
 (defn canvas-action
   "Adds an action into the canvas channel.
   This applies the action to the current state
-  and updates the gui asynchronously."
+  and updates the gui."
   ([] (put! canvas-channel identity))
   ([action] (put! canvas-channel action)))
 
