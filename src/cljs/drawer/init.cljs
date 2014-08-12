@@ -8,8 +8,8 @@
   possible without overflow."
   []
   (let [cwidth (.-offsetWidth core/controls)
-        width  (- (.-innerWidth js/window) (js/parseInt cwidth))
-        height (.-innerHeight js/window)]
+        width (max (- (.-innerWidth js/window) (js/parseInt cwidth)) 750)
+        height (max (.-innerHeight js/window) 600)]
     (.setAttribute core/canvas "width" (dec width))
     (.setAttribute core/canvas "height" height))
   (core/canvas-action))

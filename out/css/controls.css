@@ -1,8 +1,8 @@
 #controls {
-    display: table;
-    position: fixed;
+    display: block;
     float: left;
     width: 255px;
+    min-height: 600px;
     height: 100%;
     margin: 0;
     padding: 0 10px;
