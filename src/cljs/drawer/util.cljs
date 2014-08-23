@@ -37,3 +37,17 @@
   (if (= (type element) js/String)
     (set! (.-innerHTML (element-by-id element)) value)
     (set! (.-innerHTML element) value)))
+
+(def positive-numbers
+  "A lazy seq of positive numbers"
+  (iterate inc 0))
+
+(defn default-obj-connections
+  "Returns the default connections
+  of an object with given count of points.
+  e.g {0 [1], 1 [2], 2 [3], ... (dec n) [0]}"
+  [n]
+  (condp = n
+    0 {}
+    (let [nums (take (dec n) positive-numbers)]
+      (reduce #(assoc %1 %2 [(inc %2)]) {(dec n) [0]} nums))))

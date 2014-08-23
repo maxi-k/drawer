@@ -41,8 +41,11 @@
 
 (def initial-state
   "The state of the program when it first starts."
-  {:info {:selected "Nichts Ausgewählt"
+  {:info {:selected :none
           :active-tab "info-tab"}
+   :canvas {:width 0 :height 0
+            :view {:pos [0 0 0 0]
+                   :fov 250}}
    :objects {}
    :pending-object {:name "" :object {}}})
 
@@ -55,8 +58,8 @@
                                canvas-channel]
                               :priority true)
             new-state (-> (action state)
-                           canvas/get-canvas-update
-                          (canvas/redraw-canvas canvas context))]
+                          (canvas/get-canvas-update))]
+        (canvas/redraw-canvas new-state canvas context)
         (gui/update-view new-state state)
         (recur new-state))))
 
@@ -64,4 +67,4 @@
 ;; the channel every [fps] seconds
 (go (while true
       (<! (timeout fps))
-      (canvas-action canvas/get-canvas-update)))
+      (canvas-action)))

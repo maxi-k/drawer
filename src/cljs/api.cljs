@@ -5,28 +5,31 @@
 
 (defn ^:export addObject
   "Adds an object to the object list."
-  ([obj-name points] (addObject obj-name points "Eigenes Zentrum" 0))
-  ([obj-name points rot-speed] (addObject obj-name points "Eigenes Zentrum" rot-speed))
-  ([obj-name points rot-center rot-speed]
+  ([obj-name points connections]
+     (addObject obj-name points connections [:center nil] [0 0 0 0]))
+  ([obj-name points connections rot-speed]
+     (addObject obj-name points connections [:center nil] rot-speed))
+  ([obj-name points connections rot-center rot-speed]
      (core/user-action
       (fn [state]
-        (assoc-in
-         state
-         [:objects obj-name]
-         (canvas/create-object (js->clj points) rot-center rot-speed))))))
-
-(defn ^:export addObjects
-  "Adds multiple objects to the object list."
-  [objs]
-  (core/user-action (fn [state]
-                      (reduce (fn [new-state [obj-name obj]]
-                                assoc-in new-state [:objects obj-name] obj)
-                              state objs))))
+        (assoc-in state [:objects obj-name]
+         (canvas/create-object (state :canvas)
+                               (js->clj points)
+                               (js->clj connections)
+                               (apply canvas/create-rot-center rot-center)
+                               rot-speed))))))
 
 ;; TEMPORARY
-(addObject "Punkt" [[450 300 0 0]] "Linie" 0.4)
-(addObject "Linie" [[500 300 0 0] [450 500 0 0]] "Dreieck" 0.75)
-(addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] -0.2)
+;; (addObject "Punkt" [[450 300 0 0]] "Linie" 0.4)
+;; (addObject "Linie" [[500 300 0 0] [450 500 0 0]] "Dreieck" 0.75)
+;; (addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] -0.2)
+
+(let [a 500 b 300 c 25 d -25]
+  (addObject "Würfel"
+             [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
+              [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
+             {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
+             [0.2 0 0 0]))
 
 (defn ^:export removeObject
   "Removes an object from the object list
@@ -52,6 +55,12 @@
   [obj-name]
   (core/user-action (fn [state]
                       (assoc-in state [:info :selected] obj-name))))
+
+(defn ^:export selectNothing
+  "Selects 'nothing', setting the currently selected
+   object to :none"
+  []
+  (setSelected :none))
 
 (defn ^:export setRotationOnAll
   "Activates/Deactivates the rotation on all objects."
