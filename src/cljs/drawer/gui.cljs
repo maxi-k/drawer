@@ -9,8 +9,8 @@
               (not= (keys (%1 :objects)) (keys (%2 :objects)))
               (not= (get-in %1 [:info :selected])
                     (get-in %2 [:info :selected])))
-   :super-elem (util/element-by-id "object-list")
-   :get-html (fn [state]
+   :parent (util/element-by-id "object-list")
+   :html (fn [state]
                (h/html
                 (for [obj-name (keys (state :objects))
                       :let [selected?
@@ -26,14 +26,17 @@
 (def ^:private object-controls-title
   "Component representing the title of the object-controls."
   {:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
-   :super-elem (util/element-by-id "object-controls-title")
-   :get-html (fn [state] (get-in state [:info :selected]))})
+   :parent (util/element-by-id "object-controls-title")
+   :html (fn [state] (let [selected (get-in state [:info :selected])]
+                          (if (= selected :none)
+                            "Nichts Ausgewählt"
+                            selected)))})
 
 (def ^:private control-tabs
   "Component representing the tabs in the object-controls."
   {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
-   :super-elem (util/element-by-id "control-tabs")
-   :get-html (fn [state]
+   :parent (util/element-by-id "control-tabs")
+   :html (fn [state]
                (h/html
                 (for [[id name] {"info-tab" "Info"
                                  "rotation-tab" "Drehung"
@@ -53,8 +56,8 @@
                             (get-in %2 [:info :selected]))
                       (not= (get-in %1 [:objects (get-in %1 [:info :selected])])
                             (get-in %1 [:objects (get-in %2 [:info :selected])]))))
-   :super-elem (util/element-by-id "object-info")
-   :get-html (fn [state]
+   :parent (util/element-by-id "object-info")
+   :html (fn [state]
                (let [selected (get-in state [:info :selected])]
                  (h/html
                   [:a.button.dangerous
@@ -66,15 +69,15 @@
 (def ^:private object-rotation
   "Component representing the content of the rotation tab."
   {:update? #(constantly false)
-   :super-elem (util/element-by-id "object-rotation")
-   :get-html ""})
+   :parent (util/element-by-id "object-rotation")
+   :html ""})
 
 ;; Todo: Stub
 (def ^:private object-mirroring
   "Component representing the content of the mirroring tab."
   {:update? #(constantly false)
-   :super-elem (util/element-by-id "object-mirroring")
-   :get-html ""})
+   :parent (util/element-by-id "object-mirroring")
+   :html ""})
 
 (def components
   "All components that should be rendered."
@@ -84,9 +87,12 @@
 (def updaters
   "All updaters that should be called."
   [{:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
-    :do-update (fn [state] (set! (-> (util/element-by-id "object-panels-wrapper") .-style .-display)
-                                (if (= "Nichts Ausgewählt" (get-in state [:info :selected]))
+    :do-update (fn [state] (set! (-> (util/element-by-id "object-panels-wrapper")
+                                    .-style
+                                    .-display)
+                                (if (= :none (get-in state [:info :selected]))
                                   "none" "block")))}
+
    {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
     :do-update (fn [state] (doseq [[tab panel] {"info-tab" "object-info",
                                                "rotation-tab" "object-rotation",
@@ -100,7 +106,7 @@
   [new-state old-state]
   (doseq [component components]
     (if ((component :update?) new-state old-state)
-      (util/set-dom! (component :super-elem) ((component :get-html) new-state))))
+      (util/set-dom! (component :parent) ((component :html) new-state))))
   (doseq [updater updaters]
     (if ((updater :update?) new-state old-state)
       ((updater :do-update) new-state))))
