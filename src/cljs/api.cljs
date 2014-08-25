@@ -5,31 +5,45 @@
 
 (defn ^:export addObject
   "Adds an object to the object list."
-  ([obj-name points connections]
-     (addObject obj-name points connections [:center nil] [0 0 0 0]))
-  ([obj-name points connections rot-speed]
-     (addObject obj-name points connections [:center nil] rot-speed))
-  ([obj-name points connections rot-center rot-speed]
+  ([obj-name points conns]
+     (addObject obj-name points conns [:center nil] [0 0 0 0]))
+  ([obj-name points conns rot-speed]
+     (addObject obj-name points conns [:center nil] rot-speed))
+  ([obj-name points conns rot-center rot-speed]
      (core/user-action
       (fn [state]
         (assoc-in state [:objects obj-name]
-         (canvas/create-object (state :canvas)
-                               (js->clj points)
-                               (js->clj connections)
-                               (apply canvas/create-rot-center rot-center)
-                               rot-speed))))))
+                  (canvas/create-object (state :canvas)
+                                        (js->clj points)
+                                        (js->clj conns)
+                                        (apply canvas/create-rot-center rot-center)
+                                        rot-speed))))))
 
 ;; TEMPORARY
-;; (addObject "Punkt" [[450 300 0 0]] "Linie" 0.4)
-;; (addObject "Linie" [[500 300 0 0] [450 500 0 0]] "Dreieck" 0.75)
-;; (addObject "Dreieck" [[500 300 0 0] [600 500 0 0] [400 500 0 0]] -0.2)
+(doseq [obj
+        #{[ "Punkt"
+            [[450 300 0 0]]
+            (util/default-obj-connections 1)
+            [:object-part {:name "Linie" :part :center}]
+            [0.2]]
 
-(let [a 500 b 300 c 25 d -25]
-  (addObject "Würfel"
-             [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
-              [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
-             {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
-             [0.2 0 0 0]))
+          [ "Linie"
+            [[500 300 0 0] [450 500 0 0]]
+            (util/default-obj-connections 2)
+            [:object-part {:name "Dreieck" :part :center}]
+            [0.75]]
+
+          [ "Dreieck"
+            [[500 300 0 0] [600 500 0 0] [400 500 0 0]]
+            (util/default-obj-connections 3)]}]
+  (apply addObject obj))
+
+#_(let [a 500 b 300 c 25 d -25]
+    (addObject "Würfel"
+               [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
+                [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
+               {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
+               [0.2 0 0 0]))
 
 (defn ^:export removeObject
   "Removes an object from the object list
