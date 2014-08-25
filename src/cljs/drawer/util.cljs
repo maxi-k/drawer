@@ -11,6 +11,12 @@
   [x]
   (.log js/console x))
 
+(def alert-map (atom {}))
+(defn alert-once [id val]
+  (when (not (contains? @alert-map id))
+    (js/alert val)
+    (swap! alert-map assoc id)))
+
 (defn construct-htag
   "Constructs an html tag with given params"
   [tag-name content & args]

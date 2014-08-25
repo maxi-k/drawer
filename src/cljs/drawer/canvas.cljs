@@ -53,19 +53,21 @@
   See create-rot-center for information about its
   structure."
   ([obj objs]
-     (let [center-info (obj :rotation :center)
+     (let [center-info (get-in obj [:rotation :center])
            center-value (center-info :value)
            center (condp = (center-info :type)
-                    :object center-value
-                    :canvas-object (get-in objs [:objects center-value :points])
+                    :points center-value
+                    :object (get-in objs [center-value :points])
                     :center [(obj-center obj)]
                     :object-part
                     (let [{:keys [name part]} center-value
-                          ctr-obj (get-in obj [:objects name])]
+                          ctr-obj (objs name)]
                       (cond
+                       (nil? ctr-obj) nil
                        (= :center part) [(obj-center ctr-obj)]
                        (vector? part) (mapv (ctr-obj :points) part)))
-                    [(obj-center obj)])] ;; default
+                    [(obj-center obj)])
+           center (if (nil? center) [(obj-center obj)] center)] ;; default
        {:points center
         :connections (util/default-obj-connections (count center))}))
   ([obj objs canvas-info]
@@ -102,8 +104,8 @@
   "Creates an object center with a type
   of either :object, :canvas-object, :object-part or :center.
   The value:
-  :object => [[100 40 20 0] [30 50 90 10] ..] ; points
-  :canvas-object => 'Object-Name-On-Canvas'
+  :points => [[100 40 20 0] [30 50 90 10] ..] ; points
+  :object => 'Object-Name-On-Canvas'
   :object-part => {:name 'Object-Name-On-Canvas'
                    :part [0 2 5 3 ..] ; point-indices from object with :name
                      or :part :center ; rot. around center of object w/ :name
