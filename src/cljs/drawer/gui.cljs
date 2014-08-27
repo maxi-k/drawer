@@ -1,5 +1,5 @@
 (ns drawer.gui
-  (:require [drawer.util :as util]
+  (:require [drawer.util :as util :refer [same-in? differ-in?]]
             [hiccups.runtime :as hr])
   (:require-macros [hiccups.core :as h]))
 
@@ -7,8 +7,7 @@
   "Component representing the object-list."
   {:update? #(or
               (not= (keys (%1 :objects)) (keys (%2 :objects)))
-              (not= (get-in %1 [:info :selected])
-                    (get-in %2 [:info :selected])))
+              (differ-in? %1 %2 :info :selected))
    :parent (util/element-by-id "object-list")
    :html (fn [state]
            (h/html
@@ -25,7 +24,7 @@
 
 (def ^:private object-controls-title
   "Component representing the title of the object-controls."
-  {:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
+  {:update? #(differ-in? %1 %2 :info :selected)
    :parent (util/element-by-id "object-controls-title")
    :html (fn [state] (let [selected (get-in state [:info :selected])]
                       (if (= selected :none)
@@ -34,7 +33,7 @@
 
 (def ^:private control-tabs
   "Component representing the tabs in the object-controls."
-  {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
+  {:update? #(differ-in? %1 %2 :info :active-tab)
    :parent (util/element-by-id "control-tabs")
    :html (fn [state]
            (h/html
@@ -50,10 +49,8 @@
 (def ^:private object-info
   "Component representing the content of the info tab."
   {:update? #(and (= (get-in %1 [:info :active-tab]) "info-tab")
-                  (or (not= (get-in %1 [:info :active-tab])
-                            (get-in %2 [:info :active-tab]))
-                      (not= (get-in %1 [:info :selected])
-                            (get-in %2 [:info :selected]))
+                  (or (differ-in? %1 %2 :info :active-tab)
+                      (differ-in? %1 %2 :info :selected)
                       (not= (get-in %1 [:objects (get-in %1 [:info :selected])])
                             (get-in %1 [:objects (get-in %2 [:info :selected])]))))
    :parent (util/element-by-id "object-info")
@@ -86,20 +83,21 @@
 
 (def updaters
   "All updaters that should be called."
-  [{:update? #(not= (get-in %1 [:info :selected]) (get-in %2 [:info :selected]))
+  [{:update? #(differ-in? %1 %2 :info :selected)
     :do-update (fn [state] (set! (-> (util/element-by-id "object-panels-wrapper")
                                     .-style
                                     .-display)
                                 (if (= :none (get-in state [:info :selected]))
                                   "none" "block")))}
 
-   {:update? #(not= (get-in %1 [:info :active-tab]) (get-in %2 [:info :active-tab]))
-    :do-update (fn [state] (doseq [[tab panel] {"info-tab" "object-info",
-                                               "rotation-tab" "object-rotation",
-                                               "mirroring-tab" "object-mirroring"}
-                                  :let [selected? (= tab (get-in state [:info :active-tab]))]]
-                            (set! (-> (util/element-by-id panel) .-style .-display)
-                                  (if selected? "block" "none"))))}])
+   {:update? #(differ-in? %1 %2 :info :active-tab)
+    :do-update (fn [state]
+                 (doseq [[tab panel] {"info-tab" "object-info",
+                                      "rotation-tab" "object-rotation",
+                                      "mirroring-tab" "object-mirroring"}
+                         :let [selected? (= tab (get-in state [:info :active-tab]))]]
+                   (set! (-> (util/element-by-id panel) .-style .-display)
+                         (if selected? "block" "none"))))}])
 
 (defn update-view
   "Re-renders respective gui elements if necessary."

@@ -6,6 +6,17 @@
   [m f & args]
   (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
 
+(defn same-in?
+  "Returns whether the items in two maps
+  returned by (get-in m [path] are the same."
+  [m1 m2 & path]
+  (= (get-in m1 path) (get-in m2 path)))
+
+(def differ-in?
+  "Returns whether the items in two maps
+  returned by (get-in m [path] differ."
+  (complement same-in?))
+
 (defn log
   "Logs given text to the console."
   [x]
