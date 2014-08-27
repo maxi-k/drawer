@@ -5,7 +5,8 @@
 
 (defn- set-canvas-size
   "Set the canvas size to the maximum
-  possible without overflow."
+  possible without overflow and update
+  the respective fields in the state."
   []
   (let [cwidth (.-offsetWidth core/controls)
         width (max (- (.-innerWidth js/window) (js/parseInt cwidth)) 750)

@@ -8,13 +8,13 @@
 
 (defn same-in?
   "Returns whether the items in two maps
-  returned by (get-in m [path] are the same."
+  returned by (get-in m [path]) are the same."
   [m1 m2 & path]
   (= (get-in m1 path) (get-in m2 path)))
 
 (def differ-in?
   "Returns whether the items in two maps
-  returned by (get-in m [path] differ."
+  returned by (get-in m [path]) differ."
   (complement same-in?))
 
 (defn log
@@ -48,7 +48,7 @@
   [class-name]
   (js->clj (.getElementsByClassName js/document class-name)))
 
-(defn set-dom!
+(defn set-html!
   "Sets the innerHTML of given element."
   [element value]
   (if (= (type element) js/String)
@@ -67,4 +67,4 @@
   (condp = n
     0 {}
     (let [nums (take (dec n) positive-numbers)]
-      (reduce #(assoc %1 %2 [(inc %2)]) {(dec n) [0]} nums))))
+      (reduce (fn [m k] (assoc m k [(inc k)])) {(dec n) [0]} nums))))

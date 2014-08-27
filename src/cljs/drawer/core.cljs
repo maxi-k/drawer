@@ -6,7 +6,7 @@
 
 (def ^:private fps
   "The fps the canvas should update
-  the objects with."
+  the objects with in milliseconds."
   (/ 1000 60))
 
 (def ^:private canvas
@@ -59,12 +59,14 @@
                               :priority true)
             new-state (-> (action state)
                           (canvas/get-canvas-update))]
+        ;; <side-effects>
         (canvas/redraw-canvas new-state canvas context)
         (gui/update-view new-state state)
+        ;; </side-effects>
         (recur new-state))))
 
 ;; Puts a canvas update onto
-;; the channel every [fps] seconds
+;; the channel every [fps] milliseconds
 (go (while true
       (<! (timeout fps))
       (canvas-action)))

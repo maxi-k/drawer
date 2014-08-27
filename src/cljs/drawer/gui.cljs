@@ -104,7 +104,7 @@
   [new-state old-state]
   (doseq [component components]
     (if ((component :update?) new-state old-state)
-      (util/set-dom! (component :parent)
+      (util/set-html! (component :parent)
                      ((component :html) new-state))))
   (doseq [updater updaters]
     (if ((updater :update?) new-state old-state)

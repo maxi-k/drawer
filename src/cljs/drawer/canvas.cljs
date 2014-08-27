@@ -34,14 +34,13 @@
       (P3->P2 canvas-info)))
 
 (defn- project-obj
-  "Projects an object (4D) onto
-  the screen plain (2D).
-  Doesn't draw the object,
-  just updates its 2D points
+  "Projects an object (4D) onto the screen (2D).
+  Doesn't draw the object, just updates its 2D points
   [obj :points2d]"
   [obj canvas-info]
   (assoc obj :points2d
-         (mapv #(project-point %1 canvas-info) (obj :points))))
+         (mapv #(project-point %1 canvas-info)
+               (obj :points))))
 
 (defn- get-rot-center
   "Returns an object with fields [:points, :connections]
@@ -72,8 +71,6 @@
         :connections (util/default-obj-connections (count center))}))
   ([obj objs canvas-info]
      (project-obj (get-rot-center obj objs) canvas-info)))
-
-
 
 ;; TODO: Only rotates 2D points!
 (defn- rotate-point
@@ -138,7 +135,7 @@
         start (points 0)]
     (.beginPath ctx)
     (condp = (count points)
-      ;; Object is single point
+      ;; Object is a single point
       1 (do (.arc ctx (start 0) (start 1) 2 0 (* 2 (.-PI js/Math)))
             (.stroke ctx)
             (.closePath ctx))

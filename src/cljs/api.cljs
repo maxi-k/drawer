@@ -99,9 +99,7 @@
   (let [dropdown-div (util/element-by-id elem-id)
         style (.-display (.-style dropdown-div))]
     (if (= "none" style)
-      (do
-        (set! (.-display (.-style dropdown-div)) "block")
-        (set! (.-onmouseup js/window) #(toggleDropdown elem-id)))
-      (do
-        (set! (.-display (.-style dropdown-div)) "none")
-        (set! (.-onmouseup js/window) nil)))))
+      (do (set! (.-display (.-style dropdown-div)) "block")
+          (set! (.-onmouseup js/window) #(toggleDropdown elem-id)))
+      (do (set! (.-display (.-style dropdown-div)) "none")
+          (set! (.-onmouseup js/window) nil)))))
