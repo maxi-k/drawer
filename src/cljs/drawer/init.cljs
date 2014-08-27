@@ -29,4 +29,4 @@
 
 ;; Initially draw all gui-components
 (doseq [component gui/components]
-  (util/set-dom! (component :parent) ((component :html) core/initial-state)))
+  (util/set-html! (component :parent) ((component :html) core/initial-state)))
