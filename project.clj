@@ -15,6 +15,6 @@
                 :compiler
                 {:output-to "out/js/drawer.min.js"
                  :output-dir "out/js/compiler/"
-                 :optimizations :simple
+                 :optimizations :advanced
                  :pretty-print false
                  :source-map "out/js/drawer.min.js.map"}}]})
