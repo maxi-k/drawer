@@ -1,14 +1,14 @@
 (ns drawer.gui
   (:require [drawer.util :as util :refer [same-in? differ-in?]]
+            [drawer.lang :refer [translate]]
             [hiccups.runtime :as hr])
   (:require-macros [hiccups.core :as h]))
 
 (def ^:private object-list
   "Component representing the object-list."
-  {:update? #(or
-              (not= (keys (%1 :objects)) (keys (%2 :objects)))
-              (differ-in? %1 %2 :info :selected))
-   :parent (util/element-by-id "object-list")
+  {:update? #(or (not= (keys (%1 :objects)) (keys (%2 :objects)))
+                 (differ-in? %1 %2 :info :selected))
+   :parent "object-list"
    :html (fn [state]
            (h/html
             (for [obj-name (keys (state :objects))
@@ -18,32 +18,32 @@
                [:a.obj-button
                 {:href "#"
                  :id (if selected? "selected-obj" nil)
-                 :onclick (str "api.setSelected('" obj-name "')")}
+                 :onclick (str "drawer.api.setSelected('" obj-name "')")}
                 obj-name]
                [:div.clearfloat]])))})
 
 (def ^:private object-controls-title
   "Component representing the title of the object-controls."
   {:update? #(differ-in? %1 %2 :info :selected)
-   :parent (util/element-by-id "object-controls-title")
+   :parent "object-controls-title"
    :html (fn [state] (let [selected (get-in state [:info :selected])]
                       (if (= selected :none)
-                        "Nichts Ausgewählt"
+                        (translate :nothing-selected)
                         selected)))})
 
 (def ^:private control-tabs
   "Component representing the tabs in the object-controls."
   {:update? #(differ-in? %1 %2 :info :active-tab)
-   :parent (util/element-by-id "control-tabs")
+   :parent "control-tabs"
    :html (fn [state]
            (h/html
-            (for [[id name] {"info-tab" "Info"
-                             "rotation-tab" "Drehung"
-                             "mirroring-tab" "Spiegelung"}
+            (for [[id name] (util/map-to-fn-of
+                             #(translate (keyword %))
+                             "info-tab" "rotation-tab" "mirroring-tab")
                   :let [selected? (= id (get-in state [:info :active-tab]))]]
               [:li.tab {:id (if selected? "selected-tab" nil)}
                [:a {:href "#"
-                    :onclick (str "api.setActiveTab('" id "')")} name]])))})
+                    :onclick (str "drawer.api.setActiveTab('" id "')")} name]])))})
 
 ;; Todo: Stub
 (def ^:private object-info
@@ -53,27 +53,27 @@
                       (differ-in? %1 %2 :info :selected)
                       (not= (get-in %1 [:objects (get-in %1 [:info :selected])])
                             (get-in %1 [:objects (get-in %2 [:info :selected])]))))
-   :parent (util/element-by-id "object-info")
+   :parent "object-info"
    :html (fn [state]
            (let [selected (get-in state [:info :selected])]
              (h/html
               [:a.button.dangerous
                {:href "#"
-                :onclick (str "api.removeObject('" selected "')")}
-               (str selected " entfernen")])))})
+                :onclick (str "drawer.api.removeObject('" selected "')")}
+               ((translate :remove-object) selected)])))})
 
 ;; Todo: Stub
 (def ^:private object-rotation
   "Component representing the content of the rotation tab."
   {:update? #(constantly false)
-   :parent (util/element-by-id "object-rotation")
+   :parent "object-rotation"
    :html ""})
 
 ;; Todo: Stub
 (def ^:private object-mirroring
   "Component representing the content of the mirroring tab."
   {:update? #(constantly false)
-   :parent (util/element-by-id "object-mirroring")
+   :parent "object-mirroring"
    :html ""})
 
 (def components
@@ -105,7 +105,7 @@
   (doseq [component components]
     (if ((component :update?) new-state old-state)
       (util/set-html! (component :parent)
-                     ((component :html) new-state))))
+                      ((component :html) new-state))))
   (doseq [updater updaters]
     (if ((updater :update?) new-state old-state)
       ((updater :do-update) new-state))))

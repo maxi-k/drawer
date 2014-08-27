@@ -1,7 +1,9 @@
 (ns drawer.init
   (:require [drawer.core :as core]
             [drawer.util :as util]
-            [drawer.gui :as gui]))
+            [drawer.document :as doc]
+            [drawer.gui :as gui]
+            [drawer.api :as api]))
 
 (defn- set-canvas-size
   "Set the canvas size to the maximum
@@ -17,16 +19,26 @@
                           (-> state
                               (assoc-in [:canvas :width] width)
                               (assoc-in [:canvas :height] height)
-                              (assoc-in [:canvas :view :pos] [(/ width 2)
-                                                              (/ height 2)
-                                                              10 0]))))))
+                              (assoc-in [:canvas :view :pos]
+                                        [(/ width 2)
+                                         (/ height 2)
+                                         10 0]))))))
 
-;; Calling set-canvas-size when the site loads
-(set-canvas-size)
+;; Initialize the screen
+(def ^:export doInit
+  (do
+    (util/set-html! core/controls doc/controls)
+    (util/set-html! "prompt-overlay" doc/prompt)
 
-;; Setting the canvas size on window resize (window.onresize)
-(set! (.-onresize js/window) set-canvas-size)
+    ;; Initially draw all gui-components
+    (doseq [component gui/components]
+      (util/set-html! (component :parent)
+                      ((component :html) core/initial-state)))
 
-;; Initially draw all gui-components
-(doseq [component gui/components]
-  (util/set-html! (component :parent) ((component :html) core/initial-state)))
+    (api/addInitScenario)
+
+    ;; Calling set-canvas-size when the site loads
+    (set-canvas-size)
+
+    ;; Setting the canvas size on window resize (window.onresize)
+    (set! (.-onresize js/window) set-canvas-size)))

@@ -17,6 +17,11 @@
   returned by (get-in m [path]) differ."
   (complement same-in?))
 
+(defn map-to-fn-of
+  "Returns a map from [ks] to (f k)."
+  [f & ks]
+  (reduce (fn [o k] (assoc o k (f k))) {} ks))
+
 (defn log
   "Logs given text to the console."
   [x]
@@ -38,6 +43,12 @@
       (str "<" tag-name (apply str param-strs) "/>")
       (str "<" tag-name (apply str param-strs) ">" content "</" tag-name ">"))))
 
+(defn nodelist-to-seq
+  "Converts a nodelist to a (not lazy) seq."
+  [nodes]
+  (let [result-seq (map #(.item nodes %) (range (.-length nodes)))]
+    (doall result-seq)))
+
 (defn element-by-id
   "Returns the dom element with given id."
   [id]
@@ -47,6 +58,11 @@
   "Returns a vector of all dom elements with given class."
   [class-name]
   (js->clj (.getElementsByClassName js/document class-name)))
+
+(defn elements-by-tag
+  "Returns a vector of all dom elements with given tag name."
+  [tag-name]
+  (nodelist-to-seq (.getElementsByTagName js/document tag-name)))
 
 (defn set-html!
   "Sets the innerHTML of given element."

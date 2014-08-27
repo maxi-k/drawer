@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html>
   <head>
     <meta charset="utf-8">
     <meta name="description" content="Polygon Drawer">
@@ -9,88 +9,16 @@
     <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
-    <div id="prompt-overlay" style="display:none;">
-      <div id="prompt-wrapper">
-        <a href="#" id="prompt-close-button"
-           onclick="api.closePrompt()">X</a>
-        <div class="clearfloat"></div>
-        <div id="prompt">
-        </div>
-      </div>
-    </div>
-    <div id="controls">
-      <h2>Zeichner</h2>
-      <div id="general-conrols">
 
-        <div style="overflow:visible; position:relative;">
-          <a class="button" href="#" onclick="api.toggleDropdown('general-options-dropdown')"
-             title="Optionen" style="padding:4px 4px 0px 4px;">
-            <img src="img/gear.png" alt="gear" width="20px"
-                 height="20px" />
-          </a>
-          <div class="dropdown" id="general-options-dropdown"
-               style="display:none;top:20px;left:20px;">
-            <ul>
-              <li>
-                <a href="#"
-                   onclick="api.selectNothing()" />
-                  Nichts ausw&auml;hlen
-                </a>
-              </li>
-              <li>
-                <a href="#" onclick="api.removeAllObjects()">Alle Objekte entfernen</a>
-              </li>
-              <hr />
-              <li>
-                <a href="#" onclick="api.setRotationOnAll(true)">
-                  Rotation aller Objekte starten
-                </a>
-              </li>
-              <li>
-                <a href="#" onclick="api.setRotationOnAll(false)">
-                  Rotation aller Objekte stoppen
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+    <div id="prompt-overlay" style="display:none;"></div>
 
-        <ul id="object-list"> </ul>
-
-      </div>
-
-
-      <div id="object-controls">
-
-        <h3 id="object-controls-title"></h3>
-
-        <div id="object-panels-wrapper" style="display:none;">
-
-          <ul id="control-tabs"></ul>
-          <div class="clearfloat"></div>
-
-          <div id="control-panels">
-            <div class="object-control-panel" id="object-info" style="display:block;"></div>
-            <div class="object-control-panel" id="object-rotation" style="display:none;"></div>
-            <div class="object-control-panel" id="object-mirroring" style="display:none;"></div>
-          </div>
-
-        </div>
-
-      </div>
-
-      <hr />
-      <h4>Testfunktionen</h4>
-      <a class="button" href="#"
-         onclick="api.printState();">Programmstatus</a>
-    </div>
-
+    <div id="controls"></div>
 
     <canvas id="canvas"></canvas>
-
 
     <div class="clearfloat"></div>
 
     <script src="js/drawer.min.js"></script>
+
   </body>
 </html>

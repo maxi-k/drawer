@@ -1,6 +1,7 @@
 (ns drawer.core
   (:require [drawer.canvas :as canvas]
             [drawer.gui :as gui]
+            [drawer.util :as util]
             [cljs.core.async :as async :refer [put! chan >! <! close! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -11,7 +12,7 @@
 
 (def ^:private canvas
   "The canvas dom element."
-  (.getElementById js/document "canvas"))
+  (util/element-by-id "canvas"))
 
 (def ^:private context
   "The canvas 2d context."
@@ -19,7 +20,7 @@
 
 (def ^:private controls
   "The controls dom element."
-  (.getElementById js/document "controls"))
+  (util/element-by-id "controls"))
 
 (def ^:private user-channel (chan))
 

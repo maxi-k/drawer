@@ -1,6 +1,7 @@
-(ns api
+(ns drawer.api
   (:require [drawer.core :as core]
             [drawer.util :as util]
+            [drawer.lang :as lang]
             [drawer.canvas :as canvas]))
 
 (defn ^:export addObject
@@ -19,44 +20,18 @@
                                         (apply canvas/create-rot-center rot-center)
                                         rot-speed))))))
 
-;; TEMPORARY
-(doseq [obj
-        #{[ "Punkt"
-            [[450 300 0 0]]
-            (util/default-obj-connections 1)
-            [:object-part {:name "Linie" :part :center}]
-            [0.2]]
-
-          [ "Linie"
-            [[500 300 0 0] [450 500 0 0]]
-            (util/default-obj-connections 2)
-            [:object-part {:name "Dreieck" :part :center}]
-            [0.75]]
-
-          [ "Dreieck"
-            [[500 300 0 0] [600 500 0 0] [400 500 0 0]]
-            (util/default-obj-connections 3)]}]
-  (apply addObject obj))
-
-#_(let [a 500 b 300 c 25 d -25]
-    (addObject "Würfel"
-               [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
-                [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
-               {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
-               [0.2 0 0 0]))
-
 (defn ^:export removeObject
   "Removes an object from the object list
   after confirming."
   [obj-name]
-  (if (js/confirm (str obj-name " entfernen?"))
+  (if (js/confirm (str ((lang/translate :remove-object) obj-name) "?"))
     (core/user-action (fn [state] (update-in state [:objects] dissoc obj-name)))))
 
 (defn ^:export removeAllObjects
   "Removes all objects from the object list
   after confirming."
   []
-  (if (js/confirm "Alle Objekte entfernen?")
+  (if (js/confirm (str (lang/translate :remove-all-objects) "?"))
     (core/user-action (fn [state] (assoc state :objects {})))))
 
 (defn ^:export printState
@@ -103,3 +78,32 @@
           (set! (.-onmouseup js/window) #(toggleDropdown elem-id)))
       (do (set! (.-display (.-style dropdown-div)) "none")
           (set! (.-onmouseup js/window) nil)))))
+
+(defn ^:export addInitScenario
+  "Adds a default scenario to the canvas."
+  []
+  ;; TEMPORARY
+  (doseq [obj
+          #{[ "Punkt"
+              [[450 300 0 0]]
+              (util/default-obj-connections 1)
+              [:object-part {:name "Linie" :part :center}]
+              [-0.8]]
+
+            [ "Linie"
+              [[500 300 0 0] [450 500 0 0]]
+              (util/default-obj-connections 2)
+              [:object-part {:name "Dreieck" :part :center}]
+              [0.75]]
+
+            [ "Dreieck"
+              [[500 300 0 0] [600 500 0 0] [400 500 0 0]]
+              (util/default-obj-connections 3)]}]
+    (apply addObject obj))
+
+  (let [a 300 b 100 c 25 d -25]
+    (addObject "Würfel"
+               [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
+                [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
+               {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
+               [0.2 0 0 0])))

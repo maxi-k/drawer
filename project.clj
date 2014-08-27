@@ -11,10 +11,10 @@
   :source-paths ["src/cljs"]
   :cljsbuild {:builds
               [{:id "main"
-                :source-paths ["src/cljs"]
+                :source-paths ["src/cljs/"]
                 :compiler
                 {:output-to "out/js/drawer.min.js"
-                 :output-dir "out/js/compiler"
-                 :optimizations :advanced
+                 :output-dir "out/js/compiler/"
+                 :optimizations :simple
                  :pretty-print false
                  :source-map "out/js/drawer.min.js.map"}}]})
