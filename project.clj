@@ -15,7 +15,7 @@
                 :compiler
                 {:output-to "out/js/drawer.min.js"
                  :output-dir "out/js/compiler/"
-                 :optimizations :simple
-                 :pretty-print true
+                 :optimizations :advanced
+                 :pretty-print false
                  :source-map "out/js/drawer.min.js.map"
                  :preamble ["reagent/react.js"]}}]})
