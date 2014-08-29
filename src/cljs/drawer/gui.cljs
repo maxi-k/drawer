@@ -75,8 +75,6 @@
      [:a {:href "#"
           :on-click (action (api/setActiveTab id))} name]]))
 
-
-
 ;; Todo: Stub
 (defn object-info
   "Component representing the content of the info tab."
@@ -152,9 +150,9 @@
   "Combining all components into the body component."
   [state action]
   [:div#body-wrapper
-   [#(prompt action)]
-   [#(controls state action)]
-   [#(canvas (@state :canvas))]
+   (prompt action)
+   (controls state action)
+   (canvas (@state :canvas))
    [:div.clearfloat]])
 
 (defn init-gui
