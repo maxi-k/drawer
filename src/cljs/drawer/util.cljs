@@ -70,3 +70,34 @@
   (if (= (type element) js/String)
     (set! (.-innerHTML (element-by-id element)) value)
     (set! (.-innerHTML element) value)))
+
+(defn keywordify
+  "Turns the the keys of
+  given data-structure into
+  keywords."
+  [m]
+  (cond
+    (map? m) (into {} (for [[k v] m] [(keyword k) (keywordify v)]))
+    (coll? m) (vec (map keywordify m))
+    :else m))
+
+(defn store-locally
+  "Stores given object in the
+  javascript localStorage.
+  Use fetch to get it again."
+  [k obj]
+  (.setItem js/localStorage k (js/JSON.stringify (clj->js obj))))
+
+(defn fetch-local
+  "Fetches a locally stored object
+  with given key and converts it
+  into a clojure data-structure."
+  [k default]
+  (let [item (.getItem js/localStorage k)]
+    (if item
+      (-> (.getItem js/localStorage k)
+          (or (js-obj))
+          (js/JSON.parse)
+          (js->clj)
+          (keywordify))
+      default)))
