@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2311"]
                  [org.clojure/core.async "0.1.319.0-6b1aca-alpha"]
-                 [hiccups "0.3.0"]]
+                 [reagent "0.4.2"]]
   :plugins [[lein-cljsbuild "1.0.3"]]
   :source-paths ["src/cljs"]
   :cljsbuild {:builds
@@ -15,6 +15,7 @@
                 :compiler
                 {:output-to "out/js/drawer.min.js"
                  :output-dir "out/js/compiler/"
-                 :optimizations :advanced
-                 :pretty-print false
-                 :source-map "out/js/drawer.min.js.map"}}]})
+                 :optimizations :simple
+                 :pretty-print true
+                 :source-map "out/js/drawer.min.js.map"
+                 :preamble ["reagent/react.js"]}}]})

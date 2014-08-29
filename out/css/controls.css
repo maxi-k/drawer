@@ -93,12 +93,8 @@
 }
 
 #control-panels {
-    display: block;
     border: 1px solid #AAA;
     border-top: none;
     background-color: #DDD;
-}
-
-.object-control-panel {
     padding: 10px 5px 5px 5px;
 }

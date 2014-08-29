@@ -2,6 +2,32 @@
   (:require [drawer.util :as util]
             [drawer.math :as math]))
 
+(defn get-canvas-info
+  "Set the canvas size to the maximum
+  possible without overflow and update
+  the respective fields in the state."
+  []
+  (fn [state]
+    (let [cwidth (js/parseInt (.-offsetWidth (util/element-by-id "controls")))
+          width (max (- (.-innerWidth js/window) cwidth) 750)
+          height (max (.-innerHeight js/window) 600)]
+      (-> state
+          (assoc-in [:canvas :width] (dec width))
+          (assoc-in [:canvas :height] height)
+          (assoc-in [:canvas :view :center] [(/ width 2)
+                                             (/ height 2)
+                                             10 0])))))
+
+(defn default-obj-connections
+  "Returns the default connections
+  of an object with given count of points.
+  e.g {0 [1], 1 [2], 2 [3], ... (dec n) [0]}"
+  [n]
+  (condp = n
+    0 {}
+    (let [nums (take (dec n) math/positive-numbers)]
+      (reduce (fn [m k] (assoc m k [(inc k)])) {(dec n) [0]} nums))))
+
 (defn- obj-center
   "Find the center of the object
   from the average of its points."
@@ -68,7 +94,7 @@
                     [(obj-center obj)])
            center (if (nil? center) [(obj-center obj)] center)] ;; default
        {:points center
-        :connections (util/default-obj-connections (count center))}))
+        :connections (default-obj-connections (count center))}))
   ([obj objs canvas-info]
      (project-obj (get-rot-center obj objs) canvas-info)))
 
@@ -208,12 +234,12 @@
         update-fns (for [[obj-name _]
                          (filter #(requires-update? (second %)) objs)]
                      (fn [s] (if (contains? (s :objects) obj-name)
-                              (assoc-in s
-                                        [:objects obj-name]
-                                        (update-object
-                                         (get-in s [:objects obj-name])
-                                         s))
-                              s)))]
+                               (assoc-in s
+                                         [:objects obj-name]
+                                         (update-object
+                                          (get-in s [:objects obj-name])
+                                          s))
+                               s)))]
     (if (empty? update-fns)
       state
       ((apply comp update-fns) state))))

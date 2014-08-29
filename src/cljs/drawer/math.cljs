@@ -2,6 +2,10 @@
 
 (def PI (.-PI js/Math))
 
+(def positive-numbers
+  "A lazy seq of positive numbers"
+  (iterate inc 0))
+
 (defn sin [angle] (.sin js/Math angle))
 (defn cos [angle] (.cos js/Math angle))
 

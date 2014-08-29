@@ -1,111 +1,162 @@
 (ns drawer.gui
-  (:require [drawer.util :as util :refer [same-in? differ-in?]]
+  (:require [drawer.api :as api]
+            [drawer.util :as util]
             [drawer.lang :refer [translate]]
-            [hiccups.runtime :as hr])
-  (:require-macros [hiccups.core :as h]))
+            [reagent.core :as r]))
 
-(def ^:private object-list
+(defn prompt
+  "The (hidden) prompt div."
+  [action]
+  [:div#prompt-overlay {:style {:display "none"}}
+   [:div#prompt-wrapper
+    [:a#prompt-close-button
+     {:href "#", :on-click (action api/closePrompt)} "X"]
+    [:div.clearfloat]
+    [:div#prompt]]])
+
+(defn canvas
+  "The canvas element."
+  [canvas-info]
+  [:canvas {:id "canvas"
+            :width (canvas-info :width)
+            :height (canvas-info :height)}])
+
+(defn general-options-dropdown
+  "Component representing the general-options-dropdown."
+  [active-dropdown action]
+  (let [name "general-options-dropdown"
+        active? (= name active-dropdown)]
+    (if active?
+      (set! (.-onmouseup js/window) (action (api/toggleDropdown name)))
+      (set! (.-onmouseup js/window) nil))
+    [:div.dropdown
+     {:id name
+      :style {:display (if active? "block" "none")
+              :top "20px" :left "20px"}}
+     [:ul
+      [:li [:a {:href "#" :on-click (action (api/selectNothing))}
+            (translate :select-nothing)]]
+      [:li [:a {:href "#" :on-click (action (api/removeAllObjects))}
+            (translate :remove-all-objects)]]
+      [:hr]
+      [:li [:a {:href "#" :on-click (action (api/setRotationOnAll true))}
+            (translate :rotation-control :start)]]
+      [:li [:a {:href "#" :on-click (action (api/setRotationOnAll false))}
+            (translate :rotation-control :stop)]]]]))
+
+(defn object-list
   "Component representing the object-list."
-  {:update? #(or (not= (keys (%1 :objects)) (keys (%2 :objects)))
-                 (differ-in? %1 %2 :info :selected))
-   :parent "object-list"
-   :html (fn [state]
-           (h/html
-            (for [obj-name (keys (state :objects))
-                  :let [selected?
-                        (= obj-name (get-in state [:info :selected]))]]
-              [:li
-               [:a.obj-button
-                {:href "#"
-                 :id (if selected? "selected-obj" nil)
-                 :onclick (str "drawer.api.setSelected('" obj-name "')")}
-                obj-name]
-               [:div.clearfloat]])))})
+  [object-keys selected action]
+  (for [obj-name object-keys
+        :let [selected? (= obj-name selected)]]
+    [:li
+     [:a.obj-button
+      {:href "#"
+       :id (if selected? "selected-obj" nil)
+       :on-click (action (api/setSelected obj-name))}
+      obj-name]
+     [:div.clearfloat]]))
 
-(def ^:private object-controls-title
+(defn object-controls-title
   "Component representing the title of the object-controls."
-  {:update? #(differ-in? %1 %2 :info :selected)
-   :parent "object-controls-title"
-   :html (fn [state] (let [selected (get-in state [:info :selected])]
-                      (if (= selected :none)
-                        (translate :nothing-selected)
-                        selected)))})
+  [selected]
+  (if (= selected :none) (translate :nothing-selected) selected))
 
-(def ^:private control-tabs
+(defn control-tabs
   "Component representing the tabs in the object-controls."
-  {:update? #(differ-in? %1 %2 :info :active-tab)
-   :parent "control-tabs"
-   :html (fn [state]
-           (h/html
-            (for [[id name] (util/map-to-fn-of
-                             #(translate (keyword %))
-                             "info-tab" "rotation-tab" "mirroring-tab")
-                  :let [selected? (= id (get-in state [:info :active-tab]))]]
-              [:li.tab {:id (if selected? "selected-tab" nil)}
-               [:a {:href "#"
-                    :onclick (str "drawer.api.setActiveTab('" id "')")} name]])))})
+  [active-tab action]
+  (for [[id name] (util/map-to-fn-of
+                   #(translate (keyword %))
+                   "info-tab" "rotation-tab" "mirroring-tab")
+        :let [selected? (= id active-tab)]]
+    [:li.tab {:id (if selected? "selected-tab" nil)}
+     [:a {:href "#"
+          :on-click (action (api/setActiveTab id))} name]]))
+
+
 
 ;; Todo: Stub
-(def ^:private object-info
+(defn object-info
   "Component representing the content of the info tab."
-  {:update? #(and (= (get-in %1 [:info :active-tab]) "info-tab")
-                  (or (differ-in? %1 %2 :info :active-tab)
-                      (differ-in? %1 %2 :info :selected)
-                      (not= (get-in %1 [:objects (get-in %1 [:info :selected])])
-                            (get-in %1 [:objects (get-in %2 [:info :selected])]))))
-   :parent "object-info"
-   :html (fn [state]
-           (let [selected (get-in state [:info :selected])]
-             (h/html
-              [:a.button.dangerous
-               {:href "#"
-                :onclick (str "drawer.api.removeObject('" selected "')")}
-               ((translate :remove-object) selected)])))})
+  [selected action]
+  [:a.button.dangerous
+   {:href "#"
+    :on-click (action (api/removeObject selected))}
+   ((translate :remove-object) selected)])
 
 ;; Todo: Stub
-(def ^:private object-rotation
+(defn object-rotation
   "Component representing the content of the rotation tab."
-  {:update? #(constantly false)
-   :parent "object-rotation"
-   :html ""})
+  []
+  [:span "--"])
 
 ;; Todo: Stub
-(def ^:private object-mirroring
+(defn object-mirroring
   "Component representing the content of the mirroring tab."
-  {:update? #(constantly false)
-   :parent "object-mirroring"
-   :html ""})
+  []
+  [:span "--"])
 
-(def components
-  "All components that should be rendered."
-  [object-list control-tabs object-controls-title
-   object-info])
+(defn control-panels
+  "Component representing the control-panels
+   object-info, object-rotation and object-mirroring."
+  [selected active-tab action]
+  (let [style #(if (= % active-tab) "block" "none")]
+    [:div#control-panels
+     [:div#object-info
+      {:style {:display (style "info-tab")}} (object-info selected action)]
+     [:div#object-rotation
+      {:style {:display (style "rotation-tab")}} (object-rotation)]
+     [:div#object-mirroring
+      {:style {:display (style "mirroring-tab")}} (object-mirroring)]]))
 
-(def updaters
-  "All updaters that should be called."
-  [{:update? #(differ-in? %1 %2 :info :selected)
-    :do-update (fn [state] (set! (-> (util/element-by-id "object-panels-wrapper")
-                                    .-style
-                                    .-display)
-                                (if (= :none (get-in state [:info :selected]))
-                                  "none" "block")))}
+(defn controls
+  "The controls div on the left."
+  [state action]
+  (let [selected (get-in @state [:info :selected])
+        active-dropdown (get-in @state [:info :active-dropdown])
+        active-tab (get-in @state [:info :active-tab])
+        object-keys (keys (@state :objects))]
+    [:div#controls
+     ;; The title
+     [:h2 (translate :title)]
+     ;; The general controls (object-list, buttons)
+     [:div#general-controls
+      [:div {:style {:overflow "visible" :position "relative"}}
+       [:a.button {:href "#"
+                   :on-click (action
+                              (api/toggleDropdown "general-options-dropdown"))
+                   :title (translate :options)
+                   :style {:padding "4px 4px 0px 4px"}}
+        [:img {:src "img/gear.png" :alt "gear"
+               :width "20px" :height "20px"}]]
+       ;; Generals objects dropdown menu
+       (general-options-dropdown active-dropdown action)]
+      [:div#object-list (object-list object-keys selected action)]]
+     ;; The selected-object controls
+     [:div#object-controls
+      [:h3#object-controls-title (object-controls-title selected)]
+      [:div#object-panels-wrapper {:style {:display (if (= :none selected)
+                                                      "none" "block")}}
+       [:ul#control-tabs (control-tabs active-tab action)]
+       [:div.clearfloat]
+       (control-panels selected active-tab action)]]
+     [:hr]
+     [:h4 (translate :test-functions)]
+     [:a.button {:href "#"
+                 :on-click (action (api/printState))}
+      (translate :program-state)]]))
 
-   {:update? #(differ-in? %1 %2 :info :active-tab)
-    :do-update (fn [state]
-                 (doseq [[tab panel] {"info-tab" "object-info",
-                                      "rotation-tab" "object-rotation",
-                                      "mirroring-tab" "object-mirroring"}
-                         :let [selected? (= tab (get-in state [:info :active-tab]))]]
-                   (set! (-> (util/element-by-id panel) .-style .-display)
-                         (if selected? "block" "none"))))}])
+(defn body
+  "Combining all components into the body component."
+  [state action]
+  [:div#body-wrapper
+   [#(prompt action)]
+   [#(controls state action)]
+   [#(canvas (@state :canvas))]
+   [:div.clearfloat]])
 
-(defn update-view
-  "Re-renders respective gui elements if necessary."
-  [new-state old-state]
-  (doseq [component components]
-    (if ((component :update?) new-state old-state)
-      (util/set-html! (component :parent)
-                      ((component :html) new-state))))
-  (doseq [updater updaters]
-    (if ((updater :update?) new-state old-state)
-      ((updater :do-update) new-state))))
+(defn init-gui
+  "Initialize the gui rendering."
+  [state user-action]
+  (r/render-component [(fn [] (body state (fn [a] #(user-action a))))]
+                      (.-body js/document)))
