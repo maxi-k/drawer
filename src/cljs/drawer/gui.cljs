@@ -52,9 +52,9 @@
     ^{:key obj-name}
     [:li
      [:a.obj-button {
-       :href "#"
-       :id (if selected? "selected-obj" nil)
-       :on-click (action (api/setSelected obj-name))}
+                     :href "#"
+                     :id (if selected? "selected-obj" nil)
+                     :on-click (action (api/setSelected obj-name))}
       obj-name]
      [:div.clearfloat]]))
 
