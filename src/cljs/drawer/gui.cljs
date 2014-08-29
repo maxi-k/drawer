@@ -49,9 +49,10 @@
   [object-keys selected action]
   (for [obj-name object-keys
         :let [selected? (= obj-name selected)]]
+    ^{:key obj-name}
     [:li
-     [:a.obj-button
-      {:href "#"
+     [:a.obj-button {
+       :href "#"
        :id (if selected? "selected-obj" nil)
        :on-click (action (api/setSelected obj-name))}
       obj-name]
@@ -69,6 +70,7 @@
                    #(translate (keyword %))
                    "info-tab" "rotation-tab" "mirroring-tab")
         :let [selected? (= id active-tab)]]
+    ^{:key id}
     [:li.tab {:id (if selected? "selected-tab" nil)}
      [:a {:href "#"
           :on-click (action (api/setActiveTab id))} name]]))
