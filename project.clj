@@ -10,12 +10,19 @@
   :plugins [[lein-cljsbuild "1.0.3"]]
   :source-paths ["src/cljs"]
   :cljsbuild {:builds
-              [{:id "main"
+              [{:id "production"
                 :source-paths ["src/cljs/"]
                 :compiler
                 {:output-to "out/js/drawer.min.js"
-                 :output-dir "out/js/compiler/"
+                 :output-dir "out/js/compiler/production"
                  :optimizations :advanced
                  :pretty-print false
-                 :source-map "out/js/drawer.min.js.map"
-                 :preamble ["reagent/react.min.js"]}}]})
+                 :preamble ["reagent/react.min.js"]
+                 :source-map "out/js/drawer.min.js.map"}}
+               {:id "development"
+                :source-paths ["src/cljs/"]
+                :compiler
+                {:output-to "out/js/drawer.js"
+                 :output-dir "out/js/compiler/development"
+                 :optimizations :none
+                 :source-map true}}]})
