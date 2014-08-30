@@ -2,7 +2,6 @@
   (:require [drawer.api :as api]
             [drawer.canvas :as canvas]
             [drawer.gui :as gui]
-            [drawer.util :as util]
             [reagent.core :as r]
             [cljs.core.async :as async :refer [put! chan >! <! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
