@@ -16,6 +16,8 @@
            :de "Zeichner"}
    :options {:en "Options"
              :de "Optionen"}
+   :points {:en "Points"
+            :de "Punkte"}
    :select-nothing {:en "Select Nothing"
                     :de "Nichts auswählen"}
    :nothing-selected {:en "Nothing selected"

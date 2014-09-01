@@ -52,14 +52,14 @@
         scale (/ fov (+ fov pz))]
     [(* px scale) (* py scale)]))
 
-(defn- project-point
+(defn project-point
   "Projects a 4D point onto the 2d plain."
   [point canvas-info]
   (-> point
       (P4->P3 canvas-info)
       (P3->P2 canvas-info)))
 
-(defn- project-obj
+(defn project-obj
   "Projects an object (4D) onto the screen (2D).
   Doesn't draw the object, just updates its 2D points
   [obj :points2d]"
@@ -148,7 +148,7 @@
      {:points points
       :connections connections
       :points2d (mapv #(project-point %1 canvas-info) points)
-      :rotation {:active true
+      :rotation {:active (not (every? zero? speed))
                  :speed speed
                  :center center}}))
 

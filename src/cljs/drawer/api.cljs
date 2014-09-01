@@ -23,7 +23,9 @@
   after confirming."
   [obj-name]
   (fn [state] (if (js/confirm (str ((lang/translate :remove-object) obj-name) "?"))
-               (update-in state [:objects] dissoc obj-name)
+               (-> state
+                   (assoc-in [:info :selected] :none)
+                   (update-in [:objects] dissoc obj-name))
                state)))
 
 (defn ^:export removeAllObjects
@@ -76,20 +78,31 @@
           new-active (if (= "none" style) elem-id :none)]
       (-> state (assoc-in [:info :active-dropdown] new-active)))))
 
+(defn ^:export setPointCoord
+  "Returns a function that sets
+   one coordinate of an object's point to given value."
+  [obj-name point-index coord-index new-value]
+  (fn [state]
+    (let [path [:objects obj-name]
+          new-obj (-> (get-in state path)
+                      (assoc-in [:points point-index coord-index] new-value)
+                      (canvas/project-obj (state :canvas)))]
+      (assoc-in state path new-obj))))
+
+;; TEMPORARY
 (defn ^:export addInitScenario
   "Returns a function that adds a default scenario to the canvas."
   [state]
-  ;; TEMPORARY
   (let [fn-2d (apply comp
                      (for [obj
                            #{[ "Punkt"
-                               [[450 300 0 0]]
+                               [[200 300 0 0]]
                                (canvas/default-obj-connections 1)
                                [:object-part {:name "Linie" :part :center}]
                                [-0.8]]
 
                              [ "Linie"
-                               [[500 300 0 0] [450 500 0 0]]
+                               [[200 200 0 0] [180 400 0 0]]
                                (canvas/default-obj-connections 2)
                                [:object-part {:name "Dreieck" :part :center}]
                                [0.75]]
@@ -104,6 +117,4 @@
                             [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
                            {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
                            [0.2 0 0 0]))]
-    ((comp fn-2d fn-3d) state))
-
-  )
+    ((comp fn-2d fn-3d) state)))
