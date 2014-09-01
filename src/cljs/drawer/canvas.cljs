@@ -218,7 +218,7 @@
         (set! (.-strokeStyle context) "#00f")
         (draw-object rot-center context)
         (when (not= :none (selected-p :object))
-          (set! (.-strokeStyle context) "#f00")
+          (set! (.-strokeStyle context) "#0a7e07")
           (-> (get-object-part selected-p objs)
               (project-obj canvas-info)
               (draw-object context)))))))
