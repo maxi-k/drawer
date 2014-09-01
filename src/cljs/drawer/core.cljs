@@ -28,7 +28,7 @@
   (add-watch state :redraw-canvas
              (let [canvas (.getElementById js/document "canvas")
                    context (.getContext canvas "2d")]
-               (fn [key ref old new]
+               (fn [_ _ _ new]
                  (canvas/redraw-canvas new canvas context)))))
 
 (defn- app
