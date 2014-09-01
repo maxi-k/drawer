@@ -35,28 +35,28 @@
       :style {:display (if active? "block" "none")
               :top "20px" :left "20px"}}
      [:ul
-      [:li [:a {:href "#" :on-click #(action (api/selectNothing))}
-            (translate :select-nothing)]]
-      [:li [:a {:href "#" :on-click #(action (api/removeAllObjects))}
-            (translate :remove-all-objects)]]
+      [:li {:on-click #(action (api/selectNothing))}
+       (translate :select-nothing)]
+      [:li {:on-click #(action (api/removeAllObjects))}
+       (translate :remove-all-objects)]
       [:hr]
-      [:li [:a {:href "#" :on-click #(action (api/setRotationOnAll true))}
-            (translate :rotation-control :start)]]
-      [:li [:a {:href "#" :on-click #(action (api/setRotationOnAll false))}
-            (translate :rotation-control :stop)]]]]))
+      [:li {:on-click #(action (api/setRotationOnAll true))}
+       (translate :rotation-control :start)]
+      [:li {:on-click #(action (api/setRotationOnAll false))}
+       (translate :rotation-control :stop)]]]))
 
 (defn object-list
   "Component representing the object-list."
   [object-keys selected action]
-  (for [obj-name object-keys
-        :let [selected? (= obj-name selected)]]
-    ^{:key obj-name}
-    [:li
-     [:a.obj-button {:href "#"
-                     :id (if selected? "selected-obj" nil)
-                     :on-click #(action (api/setSelected obj-name))}
-      obj-name]
-     [:div.clearfloat]]))
+  [:ul#object-list.selectable-list
+   (for [obj-name object-keys
+         :let [selected? (= obj-name selected)]]
+     ^{:key obj-name}
+     [:li {:style {:border-bottom "1px solid #AAA"}
+           :class (if selected? "light-background" "white-background")
+           :on-click #(action (api/setSelected obj-name))}
+      obj-name
+      [:div.clearfloat]])])
 
 (defn object-controls-title
   "Component representing the title of the object-controls."
@@ -71,16 +71,16 @@
                    "info-tab" "rotation-tab" "mirroring-tab")
         :let [selected? (= id active-tab)]]
     ^{:key id}
-    [:li.tab {:id (if selected? "selected-tab" nil)}
-     [:a {:href "#"
-          :on-click #(action (api/setActiveTab id))} name]]))
+    [:li.tab {:class (if selected? "light-background" "white-background")
+              :on-click #(action (api/setActiveTab id))}
+     name]))
 
 ;; Todo: Stub
 (defn object-info
   "Component representing the content of the info tab."
-  [obj selected action]
+  [obj {:keys [selected selected-point]} action]
   [:div#object-info {:style {:display "none"}}
-   [:a.button.dangerous
+   [:div.button.dangerous
     {:href "#"
      :on-click #(action (api/removeObject selected))}
     ((translate :remove-object) selected)]
@@ -93,23 +93,28 @@
             style {:display "block"
                    :width "40px"
                    :float "left"}]
-        (for [idx1 (take (count ps) math/positive-numbers)
-              :let [point (ps idx1)]]
-          ^{:key idx1}
-          [:div (for [idx2 [0 1 2 3]
-                      :let [coord (point idx2)]]
-                  ^{:key idx2}
-                  [:input (if (get-in obj [:rotation :active])
-                            {:style style
-                             :type "text" :value (str coord)
-                             :read-only true}
-                            {:style style
-                             :type "text" :value (str coord)
-                             :on-change #(action (api/setPointCoord
-                                                  selected idx1 idx2
-                                                  (int (-> % .-target .-value))))
-                             :read-only false})])
-           [:div.clearfloat]])))]])
+        [:ul.selectable-list
+         (for [idx1 (take (count ps) math/positive-numbers)
+               :let [point (ps idx1)
+                     selected? (and (= (selected-point :name) selected)
+                                    (= (get-in selected-point [:part 0]) idx1))]]
+           ^{:key idx1}
+           [:li {:class (if selected? "dark-background" "light-background")
+                 :on-click #(action (api/setSelectedPoint selected idx1))}
+            (for [idx2 [0 1 2 3]
+                  :let [coord (point idx2)]]
+              ^{:key idx2}
+              [:input (if (get-in obj [:rotation :active])
+                        {:style style
+                         :type "text" :value (str coord)
+                         :read-only true}
+                        {:style style
+                         :type "text" :value (str coord)
+                         :on-change #(action (api/setPointCoord
+                                              selected idx1 idx2
+                                              (int (-> % .-target .-value))))
+                         :read-only false})])
+            [:div.clearfloat]])]))]])
 
 ;; Todo: Stub
 (defn object-rotation
@@ -130,11 +135,12 @@
 (defn control-panels
   "Component representing the control-panels
   object-info, object-rotation and object-mirroring."
-  [obj selected active-tab action]
-  (let [style #(if (= % active-tab) "block" "none")
+  [obj info action]
+  (let [active-tab (info :active-tab)
+        style #(if (= % active-tab) "block" "none")
         put-style #(assoc-in %1 [1 :style :display] (style %2))]
     [:div#control-panels
-     (put-style (object-info obj selected action) "info-tab")
+     (put-style (object-info obj info action) "info-tab")
      (put-style (object-rotation) "rotation-tab")
      (put-style (object-mirroring) "mirroring-tab")]))
 
@@ -152,16 +158,15 @@
      ;; The general controls (object-list, buttons)
      [:div#general-controls
       [:div {:style {:overflow "visible" :position "relative"}}
-       [:a.button {:href "#"
-                   :on-click #(action
-                               (api/toggleDropdown "general-options-dropdown"))
-                   :title (translate :options)
-                   :style {:padding "4px 4px 0px 4px"}}
+       [:div.button {:on-click #(action
+                                 (api/toggleDropdown "general-options-dropdown"))
+                     :title (translate :options)
+                     :style {:padding "4px 4px 0px 4px"}}
         [:img {:src "img/gear.png" :alt "gear"
                :width "20px" :height "20px"}]]
        ;; Generals objects dropdown menu
        (general-options-dropdown active-dropdown action)]
-      [:div#object-list (object-list object-keys selected action)]]
+      (object-list object-keys selected action)]
      ;; The selected-object controls
      [:div#object-controls
       [:h3#object-controls-title (object-controls-title selected)]
@@ -169,11 +174,11 @@
                                                       "none" "block")}}
        [:ul#control-tabs (control-tabs active-tab action)]
        [:div.clearfloat]
-       (control-panels selected-obj selected active-tab action)]]
+       (control-panels selected-obj (@state :info) action)]]
      [:hr]
      [:h4 (translate :test-functions)]
-     [:a.button {:href "#"
-                 :on-click #(action (api/printState))}
+     [:div.button {:href "#"
+                   :on-click #(action (api/printState))}
       (translate :program-state)]]))
 
 (defn body

@@ -29,3 +29,15 @@ h2 {
 .left-bordered {
     border-left: 1px solid #AAA;
 }
+
+.white-background {
+    background-color: #FFF;
+}
+
+.light-background {
+    background-color: #DDD;
+}
+
+.dark-background {
+    background-color: #BBB;
+}

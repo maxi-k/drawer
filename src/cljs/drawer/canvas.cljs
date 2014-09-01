@@ -68,6 +68,21 @@
          (mapv #(project-point %1 canvas-info)
                (obj :points))))
 
+(defn- get-object-part
+  "Parses a structure like
+  {:name [obj-name] :part point-indices}
+  into an object of the structure
+  {:points points-of-obj}.
+  Used for converting relationships between
+  objects (:rot-center -> other-object) into
+  absolute data (:rot-center -> point-coords)."
+  [{:keys [name part]} objs]
+  (let [ctr-obj (objs name)]
+    {:points (cond
+              (nil? ctr-obj) [[0 0 0 0]]
+              (= :center part) [(obj-center ctr-obj)]
+              (vector? part) (mapv (ctr-obj :points) part))}))
+
 (defn- get-rot-center
   "Returns an object with fields [:points, :connections]
   that serves as rotation center for other objects.
@@ -84,13 +99,7 @@
                     :points center-value
                     :object (get-in objs [center-value :points])
                     :center [(obj-center obj)]
-                    :object-part
-                    (let [{:keys [name part]} center-value
-                          ctr-obj (objs name)]
-                      (cond
-                       (nil? ctr-obj) nil
-                       (= :center part) [(obj-center ctr-obj)]
-                       (vector? part) (mapv (ctr-obj :points) part)))
+                    :object-part ((get-object-part center-value objs) :points)
                     [(obj-center obj)])
            center (if (nil? center) [(obj-center obj)] center)] ;; default
        {:points center
@@ -130,8 +139,8 @@
   :points => [[100 40 20 0] [30 50 90 10] ..] ; points
   :object => 'Object-Name-On-Canvas'
   :object-part => {:name 'Object-Name-On-Canvas'
-                   :part [0 2 5 3 ..] ; point-indices from object with :name
-                     or :part :center ; rot. around center of object w/ :name
+  :part [0 2 5 3 ..] ; point-indices from object with :name
+  or :part :center ; rot. around center of object w/ :name
   :center => [doesn't matter] ; rotate around center of object"
   [type value]
   {:type type
@@ -196,6 +205,7 @@
   (clear canvas context)
   (let [canvas-info (state :canvas)
         selected (get-in state [:info :selected])
+        selected-p (get-in state [:info :selected-point])
         objs (state :objects)]
     (doseq [[obj-name obj] objs
             :let [rot-center (get-rot-center obj objs canvas-info)
@@ -205,8 +215,13 @@
         (set! (.-strokeStyle context) "#000"))
       (draw-object obj context)
       (when selected?
-        (set! (.-strokeStyle context) "#0f0")
-        (draw-object rot-center context)))))
+        (set! (.-strokeStyle context) "#00f")
+        (draw-object rot-center context)
+        (when (not= :none (selected-p :object))
+          (set! (.-strokeStyle context) "#f00")
+          (-> (get-object-part selected-p objs)
+              (project-obj canvas-info)
+              (draw-object context)))))))
 
 (defn requires-update?
   "Returns whether given object
@@ -234,12 +249,12 @@
         update-fns (for [[obj-name _]
                          (filter #(requires-update? (second %)) objs)]
                      (fn [s] (if (contains? (s :objects) obj-name)
-                               (assoc-in s
-                                         [:objects obj-name]
-                                         (update-object
-                                          (get-in s [:objects obj-name])
-                                          s))
-                               s)))]
+                              (assoc-in s
+                                        [:objects obj-name]
+                                        (update-object
+                                         (get-in s [:objects obj-name])
+                                         s))
+                              s)))]
     (if (empty? update-fns)
       state
       ((apply comp update-fns) state))))

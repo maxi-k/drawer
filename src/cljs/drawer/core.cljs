@@ -14,6 +14,7 @@
 (def ^:private initial-state
   "The state of the program."
   {:info {:selected :none
+          :selected-point {:name :none :part [0]}
           :active-tab "info-tab"
           :active-dropdown :none}
    :canvas {:width 0 :height 0

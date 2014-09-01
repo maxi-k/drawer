@@ -48,6 +48,14 @@
   (fn [state]
     (assoc-in state [:info :selected] obj-name)))
 
+(defn ^:export setSelectedPoint
+  "Returns a function that sets the currently selected point
+  of an object on the canvas."
+  [obj-name point-index]
+  (fn [state]
+    (assoc-in state [:info :selected-point] {:name obj-name
+                                             :part [point-index]})))
+
 (defn ^:export selectNothing
   "Returns a function that selects 'nothing',
   setting the currently selected object to :none"
