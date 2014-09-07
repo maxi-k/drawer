@@ -118,10 +118,12 @@
            (doseq [i (range times)]
              (<! (timeout fps))
              (action #(update-in % [:message :opacity] + step)))
+           (action #(assoc-in % [:message :opacity] 1.0))
            (<! (timeout time))
            (doseq [i (range (inc times))]
              (<! (timeout fps))
              (action #(update-in % [:message :opacity] - step)))
+           (action #(assoc-in % [:message :opacity] 0))
            (action #(assoc-in % [:message :value] ""))))))
 
 (defn ^:export printState
