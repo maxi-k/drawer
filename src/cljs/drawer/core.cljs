@@ -14,7 +14,9 @@
 
 (def ^:private initial-state
   "The state of the program."
-  {:info {:selected :none
+  {:message {:value ""
+             :opacity 0.0}
+   :info {:selected :none
           :selected-point {:name :none :part [0]}
           :active-tab "info-tab"
           :active-dropdown :none}

@@ -18,6 +18,23 @@ h2 {
     float: left;
 }
 
+#message {
+    display: block;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 900;
+    width: 200px;
+    height: auto;
+    padding: 20px;
+    word-wrap: break-word;
+    color: #000;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 1px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.2);
+}
+
 .clearfloat {
     clear: both;
 }

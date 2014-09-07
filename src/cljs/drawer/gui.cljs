@@ -29,18 +29,20 @@
   ([name active img action]
      (dropdown-button name active img action identity))
   ([name active img action fn-wrapper]
-     [:div.button {:on-click (fn-wrapper
-                              (fn [] (let [func #(action (api/toggleDropdown %))]
-                                      (if (= active name)
-                                        (func :none)
-                                        (do (func name)
-                                            (set! (.-onmouseup js/window)
-                                                  #((do (func :none)
-                                                        (set! (.-onmouseup js/window)
-                                                              (fn [] nil))))))))))
-                   :title (translate :options)
-                   :style {:padding "4px 4px 0px 4px"
-                           :margin-right "5px"}}
+     [:div.button
+      {:on-click
+       (fn-wrapper
+        (fn [] (let [func #(action (api/toggleDropdown %))]
+                (if (= active name)
+                  (func :none)
+                  (do (func name)
+                      (set! (.-onmouseup js/window)
+                            #((do (func :none)
+                                  (set! (.-onmouseup js/window)
+                                        (fn [] nil))))))))))
+       :title (translate :options)
+       :style {:padding "4px 4px 0px 4px"
+               :margin-right "5px"}}
       [:img {:src (str "img/" img ".png") :alt img
              :width "20px" :height "20px"}]]))
 
@@ -199,7 +201,8 @@
        (dropdown-button "general-options-dropdown" active-dropdown "gear" action)
        (dropdown-button "object-options-dropdown" active-dropdown "cube" action
                         (fn [func] (if (= :none selected)
-                                    #(js/alert (translate :nothing-selected))
+                                    #(api/showMessage
+                                      action (translate :nothing-selected))
                                     func)))
        ;; Generals objects dropdown menu
        (general-options-dropdown active-dropdown action)
@@ -218,6 +221,12 @@
      [:div.button {:on-click #(action (api/printState))}
       (translate :program-state)]]))
 
+(defn message
+  "The message that can appear on the top right of the screen."
+  [{:keys [value opacity]}]
+  [:div#message {:style {:opacity opacity}}
+   value])
+
 (defn body
   "Combining all components into the body component."
   [state action]
@@ -225,7 +234,8 @@
    (prompt action)
    (controls state action)
    (canvas (@state :canvas))
-   [:div.clearfloat]])
+   [:div.clearfloat]
+   (message (@state :message))])
 
 (defn init-gui
   "Initialize the gui rendering."
