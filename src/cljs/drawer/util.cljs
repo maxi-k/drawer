@@ -1,4 +1,5 @@
-(ns drawer.util)
+(ns drawer.util
+  (:require [tailrecursion.cljson :refer [clj->cljson cljson->clj]]))
 
 (defn update-values
   "Updates the values of given map using
@@ -49,6 +50,13 @@
   (let [result-seq (map #(.item nodes %) (range (.-length nodes)))]
     (doall result-seq)))
 
+(defn try-parse-int
+  "If js/parseInt succeeds, returns the parsed Int,
+  otherwise returns nil"
+  [v]
+  (let [i (js/parseInt v)]
+    (if (js/isNaN i) nil i)))
+
 (defn element-by-id
   "Returns the dom element with given id."
   [id]
@@ -71,33 +79,28 @@
     (set! (.-innerHTML (element-by-id element)) value)
     (set! (.-innerHTML element) value)))
 
-(defn keywordify
-  "Turns the the keys of
-  given data-structure into
-  keywords."
-  [m]
+(defn change-items
+  "Changes all keys/values of the
+  datastructure 'm' by applying 'f'
+  to each one."
+  [f m]
   (cond
-    (map? m) (into {} (for [[k v] m] [(keyword k) (keywordify v)]))
-    (coll? m) (vec (map keywordify m))
-    :else m))
+   (map? m) (into {} (for [[k v] m] [(change-items f m) (change-items f m)]))
+   (coll? m) (vec (map #(change-items f %) m))
+   :else (f m)))
 
 (defn store-locally
   "Stores given object in the
-  javascript localStorage.
+  html5 localStorage.
   Use fetch to get it again."
   [k obj]
-  (.setItem js/localStorage k (js/JSON.stringify (clj->js obj))))
+  (.setItem js/localStorage k (clj->cljson obj)))
 
 (defn fetch-local
   "Fetches a locally stored object
   with given key and converts it
   into a clojure data-structure."
   [k default]
-  (let [item (.getItem js/localStorage k)]
-    (if item
-      (-> (.getItem js/localStorage k)
-          (or (js-obj))
-          (js/JSON.parse)
-          (js->clj)
-          (keywordify))
-      default)))
+  (if-let [item (.getItem js/localStorage k)]
+    (cljson->clj item)
+    default))

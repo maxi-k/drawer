@@ -2,6 +2,7 @@
   (:require [drawer.api :as api]
             [drawer.canvas :as canvas]
             [drawer.gui :as gui]
+            [drawer.util :as util]
             [reagent.core :as r]
             [cljs.core.async :as async :refer [put! chan >! <! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -22,6 +23,18 @@
                    :fov 250}}
    :objects {}
    :pending-object {:name "" :object {}}})
+
+(defn- fetch-state
+  "Loads the state from local storage
+  and keywordifies the right parts."
+  []
+  (util/fetch-local "state" initial-state))
+
+(defn- save-state
+  "Stores the state locally."
+  [state]
+  (util/store-locally "state" state))
+
 
 (defn- init-watches
   "Initializers any state-atom watchers."
@@ -67,7 +80,7 @@
 (defn ^:export init
   "Initializes the program."
   []
-  (let [state (r/atom initial-state)
+  (let [state (r/atom (fetch-state))
         cnvch (chan)
         usr-ac (construct-actor state)
         cnv-ac (construct-actor-async cnvch canvas/get-canvas-update)]
@@ -77,6 +90,7 @@
     (go (while true
           (<! (timeout fps))
           (cnv-ac)))
+    (set! (.-onunload js/window) #(save-state @state))
     (set! (.-onresize js/window) #(cnv-ac (canvas/get-canvas-info)))
     (usr-ac api/addInitScenario))
   ((.-onresize js/window)))
