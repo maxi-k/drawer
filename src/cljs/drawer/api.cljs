@@ -18,15 +18,23 @@
                                        (apply canvas/create-rot-center rot-center)
                                        rot-speed)))))
 
-(defn ^:export removeObject
-  "Returns a function that removes an object from the object list
-  after confirming."
+(defn ^:export duplicateObject
+  "Returns a function that duplicates the object
+  with 'obj-name'"
   [obj-name]
-  (fn [state] (if (js/confirm (str ((lang/translate :remove-object) obj-name) "?"))
-               (-> state
-                   (assoc-in [:info :selected] :none)
-                   (update-in [:objects] dissoc obj-name))
-               state)))
+  (fn [state]
+    (let [objs (state :objects)
+          sep "-"
+          id (loop [i 1] (if (contains? objs (str obj-name sep i))
+                           (recur (inc i)) i))]
+      (assoc-in state [:objects (str obj-name sep id)] (objs obj-name)))))
+
+(defn ^:export removeObject
+  "Returns a function that removes an object from the object list."
+  [obj-name]
+  (fn [state] (-> state
+                 (assoc-in [:info :selected] :none)
+                 (update-in [:objects] dissoc obj-name))))
 
 (defn ^:export removeAllObjects
   "Returns a function that removes all objects from the object list
@@ -62,6 +70,11 @@
   []
   (setSelected :none))
 
+(defn ^:export setRotation
+  [obj-name do-rotate]
+  (fn [state]
+    (assoc-in state [:objects obj-name :rotation :active] do-rotate)))
+
 (defn ^:export setRotationOnAll
   "Returns a function that activates/deactivates the rotation on all objects."
   [do-rotate]
@@ -78,13 +91,11 @@
   (fn [state] (assoc-in state [:info :active-tab] active)))
 
 (defn ^:export toggleDropdown
-  "Returns a function that toggles the dropdown menu of the options button."
-  [elem-id]
+  "Returns a function that activates the dropdown-menu with 'name'.
+  Pass :none to disable any dropdowns."
+  [new-active]
   (fn [state]
-    (let [dropdown-div (util/element-by-id elem-id)
-          style (.-display (.-style dropdown-div))
-          new-active (if (= "none" style) elem-id :none)]
-      (-> state (assoc-in [:info :active-dropdown] new-active)))))
+    (-> state (assoc-in [:info :active-dropdown] new-active))))
 
 (defn ^:export setPointCoord
   "Returns a function that sets
@@ -101,7 +112,8 @@
 (defn ^:export addInitScenario
   "Returns a function that adds a default scenario to the canvas."
   [state]
-  (let [fn-2d (apply comp
+  (let [objs (state :objects)
+        fn-2d (apply comp
                      (for [obj
                            #{[ "Punkt"
                                [[200 300 0 0]]
@@ -118,11 +130,15 @@
                              [ "Dreieck"
                                [[500 300 0 0] [600 500 0 0] [400 500 0 0]]
                                (canvas/default-obj-connections 3)]}]
-                       (apply addObject obj)))
-        fn-3d (let [a 300 b 100 c 25 d -25]
-                (addObject "Würfel"
-                           [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
-                            [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
-                           {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
-                           [0.2 0 0 0]))]
+                       (if (contains? objs (obj 0))
+                         identity
+                         (apply addObject obj))))
+        fn-3d (if (contains? objs "Würfel")
+                identity
+                (let [a 300 b 100 c 25 d -25]
+                  (addObject "Würfel"
+                             [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
+                              [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
+                             {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
+                             [0.2 0 0 0])))]
     ((comp fn-2d fn-3d) state)))

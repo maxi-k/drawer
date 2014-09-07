@@ -22,14 +22,34 @@
             :width (canvas-info :width)
             :height (canvas-info :height)}])
 
+(defn dropdown-button
+  "Generalization for a dropdown button that
+  toggles the dropdown with 'name', and has
+  'img' as background."
+  ([name active img action]
+     (dropdown-button name active img action identity))
+  ([name active img action fn-wrapper]
+     [:div.button {:on-click (fn-wrapper
+                              (fn [] (let [func #(action (api/toggleDropdown %))]
+                                      (if (= active name)
+                                        (func :none)
+                                        (do (func name)
+                                            (set! (.-onmouseup js/window)
+                                                  #((do (func :none)
+                                                        (set! (.-onmouseup js/window)
+                                                              (fn [] nil))))))))))
+                   :title (translate :options)
+                   :style {:padding "4px 4px 0px 4px"
+                           :margin-right "5px"}}
+      [:img {:src (str "img/" img ".png") :alt img
+             :width "20px" :height "20px"}]]))
+
 (defn general-options-dropdown
-  "Component representing the general-options-dropdown."
+  "Component representing the general-options-dropdown
+  (activated by the gear-button)."
   [active-dropdown action]
   (let [name "general-options-dropdown"
         active? (= name active-dropdown)]
-    (if active?
-      (set! (.-onmouseup js/window) #(action (api/toggleDropdown name)))
-      (set! (.-onmouseup js/window) nil))
     [:div.dropdown
      {:id name
       :style {:display (if active? "block" "none")
@@ -44,6 +64,22 @@
        (translate :rotation-control :start)]
       [:li {:on-click #(action (api/setRotationOnAll false))}
        (translate :rotation-control :stop)]]]))
+
+(defn object-options-dropdown
+  "Component representing the object-options-dropdown
+  (activated by the cube-button."
+  [active-dropdown selected action]
+  (let [name "object-options-dropdown"
+        active? (= name active-dropdown)]
+    [:div.dropdown
+     {:id name
+      :style {:display (if active? "block" "none")
+              :top "20px" :left "58px"}}
+     [:ul
+      [:li {:on-click #(action (api/removeObject selected))}
+       ((translate :remove-object) selected)]
+      [:li {:on-click #(action (api/duplicateObject selected))}
+       ((translate :duplicate-object) selected)]]]))
 
 (defn object-list
   "Component representing the object-list."
@@ -80,49 +116,51 @@
   "Component representing the content of the info tab."
   [obj {:keys [selected selected-point]} action]
   [:div#object-info {:style {:display "none"}}
-   [:div.button.dangerous
-    {:href "#"
-     :on-click #(action (api/removeObject selected))}
-    ((translate :remove-object) selected)]
-   [:div
-    [:h3 {:style {:margin-bottom "3px"}}
-     (translate :points)]
-    (if (nil? obj)
-      "--"
-      (let [ps (mapv #(mapv int %) (obj :points))
-            style {:display "block"
-                   :width "40px"
-                   :float "left"}]
-        [:ul.selectable-list
-         (for [idx1 (take (count ps) math/positive-numbers)
-               :let [point (ps idx1)
-                     selected? (and (= (selected-point :name) selected)
-                                    (= (get-in selected-point [:part 0]) idx1))]]
-           ^{:key idx1}
-           [:li {:class (if selected? "dark-background" "light-background")
-                 :on-click #(action (api/setSelectedPoint selected idx1))}
-            (for [idx2 [0 1 2 3]
-                  :let [coord (point idx2)]]
-              ^{:key idx2}
-              [:input (if (get-in obj [:rotation :active])
-                        {:style style
-                         :type "text" :value (str coord)
-                         :read-only true}
-                        {:style style
-                         :type "text" :value (str coord)
-                         :on-change #(action (api/setPointCoord
-                                              selected idx1 idx2
-                                              (int (-> % .-target .-value))))
-                         :read-only false})])
-            [:div.clearfloat]])]))]])
+   [:h3 {:style {:margin "3px 0"}}
+    (translate :points)]
+   (if (nil? obj)
+     "--"
+     (let [ps (mapv #(mapv int %) (obj :points))
+           style {:display "block"
+                  :width "40px"
+                  :float "left"}]
+       [:ul.selectable-list
+        (for [idx1 (take (count ps) math/positive-numbers)
+              :let [point (ps idx1)
+                    selected? (and (= (selected-point :name) selected)
+                                   (= (get-in selected-point [:part 0]) idx1))]]
+          ^{:key idx1}
+          [:li {:class (if selected? "dark-background" "light-background")
+                :on-click #(action (api/setSelectedPoint selected idx1))}
+           (for [idx2 [0 1 2 3]
+                 :let [coord (point idx2)]]
+             ^{:key idx2}
+             [:input (if (get-in obj [:rotation :active])
+                       {:style style
+                        :type "text" :value (str coord)
+                        :read-only true}
+                       {:style style
+                        :type "text" :value (str coord)
+                        :on-change #(action (api/setPointCoord
+                                             selected idx1 idx2
+                                             (int (-> % .-target .-value))))
+                        :read-only false})])
+           [:div.clearfloat]])]))])
 
 ;; Todo: Stub
 (defn object-rotation
   "Component representing the content of the rotation tab."
-  []
+  [obj {:keys [selected]} action]
   [:div#object-rotation
    {:style {:display "none"}}
-   "--"])
+   [:table.view-table
+    [:tr
+     [:td [:span (str (translate :active) ":")]]
+     [:td [:input {:type "checkbox"
+                   :checked (boolean (get-in obj [:rotation :active]))
+                   :on-change #(action (api/setRotation
+                                        selected
+                                        (-> % .-target .-checked)))}]]]]])
 
 ;; Todo: Stub
 (defn object-mirroring
@@ -141,7 +179,7 @@
         put-style #(assoc-in %1 [1 :style :display] (style %2))]
     [:div#control-panels
      (put-style (object-info obj info action) "info-tab")
-     (put-style (object-rotation) "rotation-tab")
+     (put-style (object-rotation obj info action) "rotation-tab")
      (put-style (object-mirroring) "mirroring-tab")]))
 
 (defn controls
@@ -158,14 +196,14 @@
      ;; The general controls (object-list, buttons)
      [:div#general-controls
       [:div {:style {:overflow "visible" :position "relative"}}
-       [:div.button {:on-click #(action
-                                 (api/toggleDropdown "general-options-dropdown"))
-                     :title (translate :options)
-                     :style {:padding "4px 4px 0px 4px"}}
-        [:img {:src "img/gear.png" :alt "gear"
-               :width "20px" :height "20px"}]]
+       (dropdown-button "general-options-dropdown" active-dropdown "gear" action)
+       (dropdown-button "object-options-dropdown" active-dropdown "cube" action
+                        (fn [func] (if (= :none selected)
+                                    #(js/alert (translate :nothing-selected))
+                                    func)))
        ;; Generals objects dropdown menu
-       (general-options-dropdown active-dropdown action)]
+       (general-options-dropdown active-dropdown action)
+       (object-options-dropdown active-dropdown selected action)]
       (object-list object-keys selected action)]
      ;; The selected-object controls
      [:div#object-controls
@@ -177,8 +215,7 @@
        (control-panels selected-obj (@state :info) action)]]
      [:hr]
      [:h4 (translate :test-functions)]
-     [:div.button {:href "#"
-                   :on-click #(action (api/printState))}
+     [:div.button {:on-click #(action (api/printState))}
       (translate :program-state)]]))
 
 (defn body

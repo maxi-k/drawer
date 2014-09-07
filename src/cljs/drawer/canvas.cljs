@@ -211,17 +211,16 @@
             :let [rot-center (get-rot-center obj objs canvas-info)
                   selected? (= selected obj-name)]]
       (if selected?
-        (set! (.-strokeStyle context) "#f00")
+        (do (set! (.-strokeStyle context) "#00f")
+            (draw-object rot-center context)
+            (when (not= :none (selected-p :object))
+              (set! (.-strokeStyle context) "#0a7e07")
+              (-> (get-object-part selected-p objs)
+                  (project-obj canvas-info)
+                  (draw-object context)))
+            (set! (.-strokeStyle context) "#f00"))
         (set! (.-strokeStyle context) "#000"))
-      (draw-object obj context)
-      (when selected?
-        (set! (.-strokeStyle context) "#00f")
-        (draw-object rot-center context)
-        (when (not= :none (selected-p :object))
-          (set! (.-strokeStyle context) "#0a7e07")
-          (-> (get-object-part selected-p objs)
-              (project-obj canvas-info)
-              (draw-object context)))))))
+      (draw-object obj context))))
 
 (defn requires-update?
   "Returns whether given object

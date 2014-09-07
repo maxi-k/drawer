@@ -1,6 +1,6 @@
 #controls {
     display: block;
-    overflow: scroll;
+    overflow: visible;
     float: left;
     width: 255px;
     min-height: 600px;
@@ -92,4 +92,8 @@
     border-top: none;
     background-color: #DDD;
     padding: 10px 5px 5px 5px;
+}
+
+.view-table tr td{
+    padding: 5px;
 }

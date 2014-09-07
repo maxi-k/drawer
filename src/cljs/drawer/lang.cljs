@@ -16,6 +16,8 @@
            :de "Zeichner"}
    :options {:en "Options"
              :de "Optionen"}
+   :active {:en "Active"
+            :de "Aktiv"}
    :points {:en "Points"
             :de "Punkte"}
    :select-nothing {:en "Select Nothing"
@@ -26,6 +28,8 @@
                         :de "Alle Objekte entfernen"}
    :remove-object {:en #(str "Remove " %)
                    :de #(str % " entfernen")}
+   :duplicate-object {:en #(str "Duplicate " %)
+                      :de #(str % " duplizieren")}
    :rotation-control {:start {:en "Start rotating all objects"
                               :de "Rotation aller Objekte starten"}
                       :stop {:en "Stop rotating all objects"
