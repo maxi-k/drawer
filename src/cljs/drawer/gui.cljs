@@ -35,11 +35,16 @@
         (fn [] (let [func #(action (api/toggleDropdown %))]
                 (if (= active name)
                   (func :none)
-                  (do (func name)
-                      (set! (.-onmouseup js/window)
-                            #((do (func :none)
-                                  (set! (.-onmouseup js/window)
-                                        (fn [] nil))))))))))
+                  (let [f #(do (func :none)
+                               (set! (.-onmousedown js/window) nil)
+                               ;; Reset the cursor to default after the
+                               ;; pointer hack has done its job
+                               (set! (-> js/document .-body .-style .-cursor) nil))]
+                    (do (func name)
+                        (set! (.-onmousedown js/window) f)
+                        ;; Hack for iOS only accepting MouseEvent input
+                        ;; from cursor:pointer/'clickable' elements
+                        (set! (-> js/document .-body .-style .-cursor) "pointer")))))))
        :title (translate :options)
        :style {:padding "4px 4px 0px 4px"
                :margin-right "5px"}}
@@ -201,9 +206,9 @@
        (dropdown-button "general-options-dropdown" active-dropdown "gear" action)
        (dropdown-button "object-options-dropdown" active-dropdown "cube" action
                         (fn [func] (if (= :none selected)
-                                    #(api/showMessage
-                                      action (translate :nothing-selected))
-                                    func)))
+                                     #(api/showMessage
+                                       action (translate :nothing-selected))
+                                     func)))
        ;; Generals objects dropdown menu
        (general-options-dropdown active-dropdown action)
        (object-options-dropdown active-dropdown selected action)]
