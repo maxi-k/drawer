@@ -33,11 +33,11 @@
     display: block;
     padding: 5px 7px;
     color: #000;
+    cursor: pointer;
 }
 
 .dropdown ul li:hover {
     background-color: #DDD;
-    cursor: pointer;
 }
 
 #object-list {
