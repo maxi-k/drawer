@@ -1,5 +1,6 @@
 (ns drawer.util
-  (:require [tailrecursion.cljson :refer [clj->cljson cljson->clj]]))
+  (:require [goog.string :as gstring]
+            [tailrecursion.cljson :refer [clj->cljson cljson->clj]]))
 
 (defn update-values
   "Updates the values of given map using
@@ -27,6 +28,11 @@
   "Logs given text to the console."
   [x]
   (.log js/console x))
+
+(defn format
+  "Formats a string using goog.string.format."
+  [fmt & args]
+  (apply gstring/format fmt args))
 
 (def alert-map (atom {}))
 (defn alert-once [id val]
@@ -104,3 +110,11 @@
   (if-let [item (.getItem js/localStorage k)]
     (cljson->clj item)
     default))
+
+(def request-anim-frame
+  (or (.-requestAnimationFrame js/window)
+      (.-webkitRequestAnimationFrame js/window)
+      (.-mozRequestAnimationFrame js/window)
+      (.-oRequestAnimationFrame js/window)
+      (.-msRequestAnimationFrame js/window)
+      (fn [callback] (js/setTimeout callback 17))))
