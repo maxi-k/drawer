@@ -2,6 +2,7 @@
   (:require [drawer.api :as api]
             [drawer.util :as util]
             [drawer.math :as math]
+            [drawer.canvas :as canvas]
             [drawer.lang :refer [translate]]
             [reagent.core :as r]))
 
@@ -128,9 +129,7 @@
    (if (nil? obj)
      "--"
      (let [ps (mapv #(mapv int %) (obj :points))
-           style {:display "block"
-                  :width "40px"
-                  :float "left"}]
+]
        [:ul.selectable-list
         (for [idx1 (take (count ps) math/positive-numbers)
               :let [point (ps idx1)
@@ -143,14 +142,12 @@
                  :let [coord (point idx2)]]
              ^{:key idx2}
              [:input (if (get-in obj [:rotation :active])
-                       {:style style
-                        :type "text" :value (str coord)
+                       {:type "text" :value (str coord)
                         :read-only true}
-                       {:style style
-                        :type "text" :value (str coord)
+                       {:type "text" :value (str coord)
                         :on-change #(action (api/setPointCoord
                                              selected idx1 idx2
-                                             (int (-> % .-target .-value))))
+                                             (float (-> % .-target .-value))))
                         :read-only false})])
            [:div.clearfloat]])]))])
 
@@ -206,9 +203,9 @@
        (dropdown-button "general-options-dropdown" active-dropdown "gear" action)
        (dropdown-button "object-options-dropdown" active-dropdown "cube" action
                         (fn [func] (if (= :none selected)
-                                     #(api/showMessage
-                                       action (translate :nothing-selected))
-                                     func)))
+                                    #(api/showMessage
+                                      action (translate :nothing-selected))
+                                    func)))
        ;; Generals objects dropdown menu
        (general-options-dropdown active-dropdown action)
        (object-options-dropdown active-dropdown selected action)]
