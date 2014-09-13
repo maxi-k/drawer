@@ -22,7 +22,7 @@
 
 (defn ^:export duplicateObject
   "Returns a function that duplicates the object
-  with 'obj-name'"
+  with 'obj-name'."
   [obj-name]
   (fn [state]
     (let [objs (state :objects)
@@ -139,29 +139,27 @@
         fn-2d (apply comp
                      (for [obj
                            #{[ "Punkt"
-                               [[200 300 0 0]]
+                               [[-100 0 0 0]]
                                (canvas/default-obj-connections 1)
                                [:object-part {:name "Linie" :part :center}]
                                [-0.8]]
 
                              [ "Linie"
-                               [[200 200 0 0] [180 400 0 0]]
+                               [[-100 -100 0 0] [-120 100 0 0]]
                                (canvas/default-obj-connections 2)
                                [:object-part {:name "Dreieck" :part :center}]
                                [0.75]]
 
                              [ "Dreieck"
-                               [[500 300 0 0] [600 500 0 0] [400 500 0 0]]
+                               [[-100 -100 0 0] [0 100 0 0] [100 -100 0 0]]
                                (canvas/default-obj-connections 3)]}]
                        (if (contains? objs (obj 0))
                          identity
                          (apply addObject obj))))
-        fn-3d (if (contains? objs "Würfel")
-                identity
-                (let [a 300 b 100 c 25 d -25]
-                  (addObject "Würfel"
-                             [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
-                              [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
-                             {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
-                             [0.2 0 0 0])))]
+        fn-3d (let [a 100 b -200 c 0 d 350]
+                (addObject "Würfel"
+                           [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
+                            [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
+                           {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
+                           [0.1 0 0 0]))]
     ((comp fn-2d fn-3d) state)))

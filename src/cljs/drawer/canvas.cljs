@@ -2,21 +2,25 @@
   (:require [drawer.util :as util]
             [drawer.math :as math]))
 
-(defn get-canvas-info
+(def horizontal-fov (math/deg-to-rad 100))
+(def vertical-fov   (math/deg-to-rad  80))
+
+(defn set-canvas-info
   "Set the canvas size to the maximum
   possible without overflow and update
   the respective fields in the state."
-  []
-  (fn [state]
-    (let [cwidth (js/parseInt (.-offsetWidth (util/element-by-id "controls")))
-          width (max (- (.-innerWidth js/window) cwidth) 750)
-          height (max (.-innerHeight js/window) 600)]
-      (-> state
-          (assoc-in [:canvas :width] (dec width))
-          (assoc-in [:canvas :height] height)
-          (assoc-in [:canvas :view :center] [(/ width 2)
-                                             (/ height 2)
-                                             10 0])))))
+  [state]
+  (let [cwidth (js/parseInt (.-offsetWidth (util/element-by-id "controls")))
+        width (dec (max (- (.-innerWidth js/window) cwidth) 750))
+        height (max (.-innerHeight js/window) 600)
+        center-x (/ width 2)
+        center-y (/ height 2)]
+    (-> state
+        (assoc-in [:canvas :width] width)
+        (assoc-in [:canvas :height] height)
+        (assoc-in [:canvas :center] [center-x center-y 10 0])
+        (assoc-in [:canvas :h-dist] (/ center-x (math/tan (/ horizontal-fov 2))))
+        (assoc-in [:canvas :v-dist] (/ center-y (math/tan (/ vertical-fov 2)))))))
 
 (defn default-obj-connections
   "Returns the default connections
@@ -47,10 +51,11 @@
 (defn- P3->P2
   "Projects a 3D point onto
   the 2D plain."
-  [[px py pz] {:keys [width height view]}]
-  (let [fov (view :fov)
-        scale (/ fov (+ fov pz))]
-    [(* px scale) (* py scale)]))
+  [[px py pz] {:keys [h-dist v-dist]}]
+  (if (zero? pz)
+    [px py]
+    [(/ (* px h-dist) pz)
+     (/ (* py v-dist) pz)]))
 
 (defn project-point
   "Projects a 4D point onto the 2d plain."
@@ -171,12 +176,12 @@
     (.beginPath ctx)
     (condp = (count points)
       ;; Object is a single point
-      1 (do (.arc ctx (start 0) (start 1) 2 0 (* 2 (.-PI js/Math)))
+      1 (do (.arc ctx (start 0) (- (start 1)) 2 0 (* 2 (.-PI js/Math)))
             (.stroke ctx)
             (.closePath ctx))
       ;; Object is a line
-      2 (do (.moveTo ctx (start 0) (start 1))
-            (.lineTo ctx ((points 1) 0) ((points 1) 1))
+      2 (do (.moveTo ctx (start 0) (- (start 1)))
+            (.lineTo ctx ((points 1) 0) (- ((points 1) 1)))
             (.stroke ctx)
             (.closePath ctx))
       ;; Object has more than 2 points
@@ -184,10 +189,23 @@
         (doseq [[from to] connections
                 :let [from-p (points from)]
                 to-p (mapv #(points %) to)]
-          (.moveTo ctx (from-p 0) (from-p 1))
-          (.lineTo ctx (to-p 0) (to-p 1)))
+          (.moveTo ctx (from-p 0) (- (from-p 1)))
+          (.lineTo ctx (to-p 0) (- (to-p 1))))
         (.stroke ctx)
         (.closePath ctx)))))
+
+(def ^:private center-axes
+  (let [ds 10
+        -ds (- ds)]
+    (mapv project-obj [{:points [[-ds 0 0 0] [ds 0 0 0]]}
+                       {:points [[0 -ds 0 0] [0 ds 0 0]]}
+                       {:points [[0 0 -ds 0] [0 0 ds 0]]}])))
+
+(defn- draw-canvas-center
+  "Draws the center of the canvas."
+  [ctx canvas-info]
+  (doseq [line center-axes]
+    (draw-object line ctx)))
 
 (defn- clear
   "Clear the canvas but keep its settings."
@@ -206,20 +224,23 @@
   (let [canvas-info (state :canvas)
         selected (get-in state [:info :selected])
         selected-p (get-in state [:info :selected-point])
-        objs (state :objects)]
+        objs (state :objects)
+        set-stroke-style #(set! (.-strokeStyle context) %)]
+    (set-stroke-style "#000")
+    (draw-canvas-center context canvas-info)
     (doseq [[obj-name obj] objs
             :let [rot-center (get-rot-center obj objs canvas-info)
                   selected? (= selected obj-name)]]
       (if selected?
-        (do (set! (.-strokeStyle context) "#00f")
+        (do (set-stroke-style "#00f")
             (draw-object rot-center context)
             (when (not= :none (selected-p :object))
-              (set! (.-strokeStyle context) "#0a7e07")
+              (set-stroke-style "#0a7e07")
               (-> (get-object-part selected-p objs)
                   (project-obj canvas-info)
                   (draw-object context)))
-            (set! (.-strokeStyle context) "#f00"))
-        (set! (.-strokeStyle context) "#000"))
+            (set-stroke-style "#f00"))
+        (set-stroke-style "#000"))
       (draw-object obj context))))
 
 (defn requires-update?
@@ -257,3 +278,15 @@
     (if (empty? update-fns)
       state
       ((apply comp update-fns) state))))
+
+(defn translate-canvas!
+  "Translates the canvas 2d context, such that
+  the coordinate center is in the middle of the
+  canvas."
+  [canvas-info]
+  (let [center (get-in canvas-info [:center])
+        canvas (.getElementById js/document "canvas")
+        ctx (.getContext canvas "2d")
+        d (.log js/console center)]
+    (.setTransform ctx 1 0 0 1 0 0)
+    (.translate ctx (center 0) (center 1))))

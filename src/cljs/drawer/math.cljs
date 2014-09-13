@@ -8,6 +8,7 @@
 
 (defn sin [angle] (.sin js/Math angle))
 (defn cos [angle] (.cos js/Math angle))
+(defn tan [angle] (.tan js/Math angle))
 
 (defn deg-to-rad
   "Turns a degree value into
