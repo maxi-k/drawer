@@ -21,8 +21,9 @@
           :active-tab "info-tab"
           :active-dropdown :none}
    :canvas {:width 0 :height 0
-            :view {:pos [0 0 0 0]
-                   :fov 250}}
+            :center [0 0]
+            :v-dist 0
+            :h-dist 0}
    :objects {}
    :pending-object {:name "" :object {}}})
 
@@ -37,7 +38,6 @@
   [state]
   (util/store-locally "state" state))
 
-
 (defn- init-watches
   "Initializers any state-atom watchers."
   [state]
@@ -45,16 +45,8 @@
              (let [canvas (.getElementById js/document "canvas")
                    context (.getContext canvas "2d")]
                (fn [_ _ _ new]
-                 (canvas/redraw-canvas new canvas context)))))
-
-(defn- app
-  "Update the state of the program
-  everytime it recieves a change
-  from one of the channels."
-  [state channels]
-  (go (while true
-        (swap! state
-               ((alts! channels :priority true) 0)))))
+                 (util/request-anim-frame
+                  #(canvas/redraw-canvas new canvas context))))))
 
 (defn- construct-actor
   "Contstructs an 'action-function'
@@ -67,32 +59,21 @@
       ([] (swap! state add-action))
       ([action] (swap! state (comp action add-action))))))
 
-(defn- construct-actor-async
-  "Constructs an 'action-function' for
-  given channel, that puts
-  (apply comp action add-fns)
-  on the channel, which then get's
-  applied to the state by 'app' asynchronously."
-  [channel & add-fns]
-  (let [add-action (apply comp add-fns)]
-    (fn
-      ([] (put! channel add-action))
-      ([action] (put! channel (comp action add-action))))))
-
 (defn ^:export init
   "Initializes the program."
   []
   (let [state (r/atom (fetch-state))
         cnvch (chan)
         usr-ac (construct-actor state)
-        cnv-ac (construct-actor-async cnvch canvas/get-canvas-update)]
-    (app state [cnvch])
+        cnv-ac (construct-actor state canvas/get-canvas-update)]
     (gui/init-gui state usr-ac)
     (init-watches state)
     (go (while true
           (<! (timeout fps))
           (cnv-ac)))
     (set! (.-onunload js/window) #(save-state @state))
-    (set! (.-onresize js/window) #(cnv-ac (canvas/get-canvas-info)))
-    (usr-ac api/addInitScenario))
-  ((.-onresize js/window)))
+    (set! (.-onresize js/window) #((cnv-ac canvas/set-canvas-info)
+                                   (go (<! (timeout 100))
+                                       (canvas/translate-canvas! (@state :canvas)))))
+    ((.-onresize js/window))
+    (usr-ac api/addInitScenario)))
