@@ -40,6 +40,18 @@
     background-color: #DDD;
 }
 
+#dropdown-wrapper {
+    position: relative;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#dropdown-wrapper>li {
+    float: left;
+}
+
 #object-list {
     max-height: 135px;
     overflow: scroll;

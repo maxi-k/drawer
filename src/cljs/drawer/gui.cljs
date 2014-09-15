@@ -52,16 +52,30 @@
       [:img {:src (str "img/" img ".png") :alt img
              :width "20px" :height "20px"}]]))
 
-(defn general-options-dropdown
-  "Component representing the general-options-dropdown
-  (activated by the gear-button)."
+(defn add-dropdown
+  "Component representing the add-dropdown
+  (acitvated by the plus-button)."
   [active-dropdown action]
-  (let [name "general-options-dropdown"
+  (let [name "add-dropdown"
         active? (= name active-dropdown)]
     [:div.dropdown
      {:id name
       :style {:display (if active? "block" "none")
-              :top "20px" :left "20px"}}
+              :top "20px" :left "27px"}}
+     [:ul
+      [:li {:on-click #(api/showMessage action "Not implemented yet")}
+       (translate :add :object)]]]))
+
+(defn general-dropdown
+  "Component representing the general-dropdown
+  (activated by the gear-button)."
+  [active-dropdown action]
+  (let [name "general-dropdown"
+        active? (= name active-dropdown)]
+    [:div.dropdown
+     {:id name
+      :style {:display (if active? "block" "none")
+              :top "20px" :left "62px"}}
      [:ul
       [:li {:on-click #(action (api/selectNothing))}
        (translate :select-nothing)]
@@ -73,21 +87,42 @@
       [:li {:on-click #(action (api/setRotationOnAll false))}
        (translate :rotation-control :stop)]]]))
 
-(defn object-options-dropdown
-  "Component representing the object-options-dropdown
+(defn object-dropdown
+  "Component representing the object-dropdown
   (activated by the cube-button."
   [active-dropdown selected action]
-  (let [name "object-options-dropdown"
+  (let [name "object-dropdown"
         active? (= name active-dropdown)]
     [:div.dropdown
      {:id name
       :style {:display (if active? "block" "none")
-              :top "20px" :left "58px"}}
+              :top "20px" :left "96px"}}
      [:ul
       [:li {:on-click #(action (api/removeObject selected))}
        ((translate :remove-object) selected)]
       [:li {:on-click #(action (api/duplicateObject selected))}
        ((translate :duplicate-object) selected)]]]))
+
+
+(defn dropdown-menus
+  "Component representing the part of the controls
+  where the dropdown buttons- and menus are."
+  [active-dropdown selected pending-object action]
+  [:ul#dropdown-wrapper
+   [:li
+    (dropdown-button "add-dropdown" active-dropdown "plus" action)
+    (add-dropdown active-dropdown action)]
+   [:li
+    (dropdown-button "general-dropdown" active-dropdown "gear" action)
+    (general-dropdown active-dropdown action)]
+   [:li
+    (dropdown-button "object-dropdown" active-dropdown "cube" action
+                     (fn [func] (if (= :none selected)
+                                 #(api/showMessage
+                                   action (translate :nothing-selected))
+                                 func)))
+    (object-dropdown active-dropdown selected action)]
+   [:div.clearfloat]])
 
 (defn object-list
   "Component representing the object-list."
@@ -129,7 +164,7 @@
    (if (nil? obj)
      "--"
      (let [ps (mapv #(mapv int %) (obj :points))
-]
+           ]
        [:ul.selectable-list
         (for [idx1 (take (count ps) math/positive-numbers)
               :let [point (ps idx1)
@@ -193,22 +228,14 @@
         selected-obj (get-in @state [:objects selected])
         active-dropdown (get-in @state [:info :active-dropdown])
         active-tab (get-in @state [:info :active-tab])
-        object-keys (keys (@state :objects))]
+        object-keys (keys (@state :objects))
+        pending-object (@state :pending-object)]
     [:div#controls
      ;; The title
      [:h2 (translate :title)]
      ;; The general controls (object-list, buttons)
      [:div#general-controls
-      [:div {:style {:overflow "visible" :position "relative"}}
-       (dropdown-button "general-options-dropdown" active-dropdown "gear" action)
-       (dropdown-button "object-options-dropdown" active-dropdown "cube" action
-                        (fn [func] (if (= :none selected)
-                                    #(api/showMessage
-                                      action (translate :nothing-selected))
-                                    func)))
-       ;; Generals objects dropdown menu
-       (general-options-dropdown active-dropdown action)
-       (object-options-dropdown active-dropdown selected action)]
+      (dropdown-menus active-dropdown selected pending-object action)
       (object-list object-keys selected action)]
      ;; The selected-object controls
      [:div#object-controls

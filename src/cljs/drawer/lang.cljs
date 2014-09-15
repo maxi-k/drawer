@@ -18,6 +18,10 @@
              :de "Optionen"}
    :active {:en "Active"
             :de "Aktiv"}
+   :add {:object {:en "Add Object"
+                  :de "Objekt hinzufügen"}
+         :scenario {:en "Add scenario"
+                    :de "Szenario hinzufügen"}}
    :points {:en "Points"
             :de "Punkte"}
    :select-nothing {:en "Select Nothing"
