@@ -222,8 +222,8 @@
   [state canvas context]
   (clear canvas context)
   (let [canvas-info (state :canvas)
-        selected (get-in state [:info :selected])
-        selected-p (get-in state [:info :selected-point])
+        selected (get-in state [:selected :obj])
+        selected-p (get-in state [:selected :point])
         objs (state :objects)
         set-stroke-style #(set! (.-strokeStyle context) %)]
     (set-stroke-style "#000")

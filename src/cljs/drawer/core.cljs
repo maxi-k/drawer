@@ -13,13 +13,9 @@
   (/ 1000 60))
 
 (def ^:private initial-state
-  "The state of the program."
-  {:message {:value ""
-             :opacity 0.0}
-   :info {:selected :none
-          :selected-point {:name :none :part [0]}
-          :active-tab "info-tab"
-          :active-dropdown :none}
+  "The initial state of the program."
+  {:selected {:obj :none
+              :point {:name :none :part [0]}}
    :canvas {:width 0 :height 0
             :center [0 0]
             :v-dist 0
@@ -63,7 +59,6 @@
   "Initializes the program."
   []
   (let [state (r/atom (fetch-state))
-        cnvch (chan)
         usr-ac (construct-actor state)
         cnv-ac (construct-actor state canvas/get-canvas-update)]
     (gui/init-gui state usr-ac)

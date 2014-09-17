@@ -35,7 +35,7 @@
   "Returns a function that removes an object from the object list."
   [obj-name]
   (fn [state] (-> state
-                 (assoc-in [:info :selected] :none)
+                 (assoc-in [:selected :obj] :none)
                  (update-in [:objects] dissoc obj-name))))
 
 (defn ^:export removeAllObjects
@@ -51,15 +51,15 @@
   "Returns a function that sets the currently selected object."
   [obj-name]
   (fn [state]
-    (assoc-in state [:info :selected] obj-name)))
+    (assoc-in state [:selected :obj] obj-name)))
 
 (defn ^:export setSelectedPoint
   "Returns a function that sets the currently selected point
   of an object on the canvas."
   [obj-name point-index]
   (fn [state]
-    (assoc-in state [:info :selected-point] {:name obj-name
-                                             :part [point-index]})))
+    (assoc-in state [:selected :point] {:name obj-name
+                                        :part [point-index]})))
 
 (defn ^:export selectNothing
   "Returns a function that selects 'nothing',
@@ -96,14 +96,13 @@
 (defn ^:export setActiveTab
   "Returns a function that sets the currently active tab."
   [active]
-  (fn [state] (assoc-in state [:info :active-tab] active)))
+  (fn [state] (assoc state :active-tab active)))
 
 (defn ^:export toggleDropdown
   "Returns a function that activates the dropdown-menu with 'name'.
   Pass :none to disable any dropdowns."
   [new-active]
-  (fn [state]
-    (-> state (assoc-in [:info :active-dropdown] new-active))))
+  (fn [state] (assoc state :active-dropdown new-active)))
 
 (defn ^:export showMessage
   "Shows the message div with given message for
@@ -125,11 +124,6 @@
              (action #(update-in % [:message :opacity] - step)))
            (action #(assoc-in % [:message :opacity] 0))
            (action #(assoc-in % [:message :value] ""))))))
-
-(defn ^:export printState
-  "Returns a function that alerts the current state map."
-  []
-  (fn [state] (js/alert state) state))
 
 ;; TEMPORARY
 (defn ^:export addInitScenario
