@@ -1,7 +1,7 @@
 (ns drawer.api
   (:require [drawer.util :as util]
             [drawer.lang :as lang]
-            [drawer.canvas :as canvas]
+            [drawer.geometry :as geometry]
             [cljs.core.async :as async :refer [put! chan >! <! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -14,11 +14,11 @@
   ([obj-name points conns rot-center rot-speed]
      (fn [state]
        (assoc-in state [:objects obj-name]
-                 (canvas/create-object (state :canvas)
-                                       (js->clj points)
-                                       (js->clj conns)
-                                       (apply canvas/create-rot-center rot-center)
-                                       rot-speed)))))
+                 (geometry/create-object (state :camera)
+                                         (js->clj points)
+                                         (js->clj conns)
+                                         (apply geometry/create-rot-center rot-center)
+                                         rot-speed)))))
 
 (defn ^:export duplicateObject
   "Returns a function that duplicates the object
@@ -55,7 +55,7 @@
 
 (defn ^:export setSelectedPoint
   "Returns a function that sets the currently selected point
-  of an object on the canvas."
+  of an object on the geometry."
   [obj-name point-index]
   (fn [state]
     (assoc-in state [:selected :point] {:name obj-name
@@ -90,7 +90,7 @@
     (let [path [:objects obj-name]
           new-obj (-> (get-in state path)
                       (assoc-in [:points point-index coord-index] new-value)
-                      (canvas/project-obj (state :canvas)))]
+                      (geometry/project-obj (state :camera)))]
       (assoc-in state path new-obj))))
 
 (defn ^:export setActiveTab
@@ -127,26 +127,26 @@
 
 ;; TEMPORARY
 (defn ^:export addInitScenario
-  "Returns a function that adds a default scenario to the canvas."
+  "Returns a function that adds a default scenario to the geometry."
   [state]
   (let [objs (state :objects)
         fn-2d (apply comp
                      (for [obj
                            #{[ "Punkt"
                                [[-100 0 0 0]]
-                               (canvas/default-obj-connections 1)
+                               (geometry/default-obj-connections 1)
                                [:object-part {:name "Linie" :part :center}]
                                [-0.8]]
 
                              [ "Linie"
                                [[-100 -100 0 0] [-120 100 0 0]]
-                               (canvas/default-obj-connections 2)
+                               (geometry/default-obj-connections 2)
                                [:object-part {:name "Dreieck" :part :center}]
                                [0.75]]
 
                              [ "Dreieck"
                                [[-100 -100 0 0] [0 100 0 0] [100 -100 0 0]]
-                               (canvas/default-obj-connections 3)]}]
+                               (geometry/default-obj-connections 3)]}]
                        (if (contains? objs (obj 0))
                          identity
                          (apply addObject obj))))
@@ -156,4 +156,5 @@
                             [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
                            {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
                            [0.1 0 0 0]))]
-    ((comp fn-2d fn-3d) state)))
+    ;;((comp fn-2d fn-3d) state)
+    (fn-3d state)))

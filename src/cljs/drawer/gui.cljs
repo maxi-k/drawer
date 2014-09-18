@@ -2,7 +2,6 @@
   (:require [drawer.api :as api]
             [drawer.util :as util]
             [drawer.math :as math]
-            [drawer.canvas :as canvas]
             [drawer.lang :refer [translate]]
             [reagent.core :as r]))
 
