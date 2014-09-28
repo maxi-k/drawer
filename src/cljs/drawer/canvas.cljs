@@ -21,8 +21,7 @@
         (assoc-in [:canvas :height] height)
         (assoc-in [:canvas :center] [center-x center-y 0 0])
         (assoc-in [:camera :h-dist] (/ center-x (math/tan (/ horizontal-fov 2))))
-        (assoc-in [:camera :v-dist] (/ center-y (math/tan (/ vertical-fov 2))))
-        (assoc-in [:camera :pos] [center-x center-y 0 0]))))
+        (assoc-in [:camera :v-dist] (/ center-y (math/tan (/ vertical-fov 2)))))))
 
 (defn- draw-object
   "Draws given object on the canvas.
@@ -55,7 +54,7 @@
         (.closePath ctx)))))
 
 (def ^:private center-axes
-  (let [ds 10
+  (let [ds 100
         -ds (- ds)]
     [{:points [[-ds 0 0 0] [ds 0 0 0]]}
      {:points [[0 -ds 0 0] [0 ds 0 0]]}
@@ -87,8 +86,9 @@
         selected-p (get-in state [:selected :point])
         objs (state :objects)
         set-stroke-style #(set! (.-strokeStyle context) %)]
-    (set-stroke-style "#000")
+    (set-stroke-style "#999")
     (draw-canvas-center context camera)
+    (set-stroke-style "#000")
     (doseq [[obj-name obj] objs
             :let [rot-center (g/get-rot-center obj objs camera)
                   selected? (= selected obj-name)]]
@@ -130,12 +130,12 @@
         update-fns (for [[obj-name _]
                          (filter #(requires-update? (second %)) objs)]
                      (fn [s] (if (contains? (s :objects) obj-name)
-                               (assoc-in s
-                                         [:objects obj-name]
-                                         (update-object
-                                          (get-in s [:objects obj-name])
-                                          s))
-                               s)))]
+                              (assoc-in s
+                                        [:objects obj-name]
+                                        (update-object
+                                         (get-in s [:objects obj-name])
+                                         s))
+                              s)))]
     (if (empty? update-fns)
       state
       ((apply comp update-fns) state))))

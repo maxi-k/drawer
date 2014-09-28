@@ -23,25 +23,25 @@
 (defn- P4->P3
   "Projects a 4D point onto
   a 2D plain."
-  [point canvas-info]
+  [point camera]
   (pop point))
 
 ;; TODO: This is a stub
 (defn- P3->P2
   "Projects a 3D point onto
   the 2D plain."
-  [[px py pz] {:keys [pos h-dist v-dist]}]
-  (if (zero? pz)
-    [px py]
-    [(/ (* px h-dist) pz)
-     (/ (* py v-dist) pz)]))
+  [point {:keys [pos h-dist v-dist]}]
+  (let [[px py pz] (map + point pos)
+        fd (if (zero? pz) 1 pz)]
+    [(/ (* px h-dist) fd)
+     (/ (* py v-dist) fd)]))
 
 (defn project-point
   "Projects a 4D point onto the 2d plain."
-  [point canvas-info]
+  [point camera]
   (-> point
-      (P4->P3 canvas-info)
-      (P3->P2 canvas-info)))
+      (P4->P3 camera)
+      (P3->P2 camera)))
 
 (defn project-obj
   "Projects an object (4D) onto the screen (2D).
