@@ -30,7 +30,7 @@
 (defn- P3->P2
   "Projects a 3D point onto
   the 2D plain."
-  [[px py pz] {:keys [h-dist v-dist]}]
+  [[px py pz] {:keys [pos h-dist v-dist]}]
   (if (zero? pz)
     [px py]
     [(/ (* px h-dist) pz)

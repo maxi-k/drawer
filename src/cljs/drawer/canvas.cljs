@@ -21,7 +21,8 @@
         (assoc-in [:canvas :height] height)
         (assoc-in [:canvas :center] [center-x center-y 0 0])
         (assoc-in [:camera :h-dist] (/ center-x (math/tan (/ horizontal-fov 2))))
-        (assoc-in [:camera :v-dist] (/ center-y (math/tan (/ vertical-fov 2)))))))
+        (assoc-in [:camera :v-dist] (/ center-y (math/tan (/ vertical-fov 2))))
+        (assoc-in [:camera :pos] [center-x center-y 0 0]))))
 
 (defn- draw-object
   "Draws given object on the canvas.

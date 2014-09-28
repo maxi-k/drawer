@@ -16,7 +16,8 @@
   "The initial state of the program."
   {:selected {:obj :none
               :point {:name :none :part [0]}}
-   :camera {:v-dist
+   :camera {:pos [0 0 0 0]
+            :v-dist
             :h-dist}
    :canvas {:width 0 :height 0
             :center [0 0]}
@@ -69,6 +70,6 @@
     (set! (.-onunload js/window) #(save-state @state))
     (set! (.-onresize js/window) #((cnv-ac canvas/set-canvas-info)
                                    (go (<! (timeout 100))
-                                       (canvas/translate-canvas! (@state :canvas)))))
+                                         (canvas/translate-canvas! (@state :canvas)))))
     ((.-onresize js/window))
     (usr-ac api/addInitScenario)))
