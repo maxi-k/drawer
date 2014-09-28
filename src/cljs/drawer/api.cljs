@@ -70,7 +70,8 @@
 (defn ^:export setRotation
   [obj-name do-rotate]
   (fn [state]
-    (assoc-in state [:objects obj-name :rotation :active] do-rotate)))
+    (if (contains? (state :objects) obj-name)
+      (assoc-in state [:objects obj-name :rotation :active] do-rotate))))
 
 (defn ^:export setRotationOnAll
   "Returns a function that activates/deactivates the rotation on all objects."
