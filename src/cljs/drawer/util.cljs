@@ -3,8 +3,9 @@
             [tailrecursion.cljson :refer [clj->cljson cljson->clj]]))
 
 (defn update-values
-  "Updates the values of given map using
-  given function with given arguments."
+  "Updates the map 'm' by applying
+  the function 'f' with the
+  arguments 'args' to every value."
   [m f & args]
   (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
 
