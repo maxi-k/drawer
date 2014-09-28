@@ -38,6 +38,22 @@
                  (assoc-in [:selected :obj] :none)
                  (update-in [:objects] dissoc obj-name))))
 
+(defn ^:export updateObjectProjection
+  "Returns a function that re-computes the 2d-points
+  of the object with given name."
+  [obj-name]
+  (fn [state]
+    (update-in state [:objects obj-name] geometry/project-obj (state :camera))))
+
+(defn ^:export updateEveryObjectProjection
+  "Returns a function that re-computes the 2d-points
+  of all objects."
+  []
+  (fn [state]
+    (let [camera (state :camera)]
+      (update-in state [:objects]
+                 util/update-values #(geometry/project-obj % camera)))))
+
 (defn ^:export removeAllObjects
   "Returns a function that removes all objects from the object list
   after confirming."
@@ -77,11 +93,9 @@
   "Returns a function that activates/deactivates the rotation on all objects."
   [do-rotate]
   (fn [state]
-    (let [new-objs (apply merge (for [[obj-name obj] (state :objects)]
-                                  {obj-name (assoc-in obj
-                                                      [:rotation :active]
-                                                      do-rotate)}))]
-      (assoc state :objects new-objs))))
+    (update-in state [:objects] util/update-values #(assoc-in %
+                                                              [:rotation :active]
+                                                              do-rotate))))
 
 (defn ^:export setPointCoord
   "Returns a function that sets
@@ -151,7 +165,7 @@
                        (if (contains? objs (obj 0))
                          identity
                          (apply addObject obj))))
-        fn-3d (let [a 100 b -200 c 0 d 350]
+        fn-3d (let [a 50 b -50 c 50 d -50]
                 (addObject "Würfel"
                            [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
                             [a a c 0] [b a c 0] [b b c 0] [a b c 0]]

@@ -3,6 +3,7 @@
             [drawer.canvas :as canvas]
             [drawer.gui :as gui]
             [drawer.util :as util]
+            [drawer.input :as input]
             [reagent.core :as r]
             [cljs.core.async :as async :refer [put! chan >! <! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
@@ -16,7 +17,7 @@
   "The initial state of the program."
   {:selected {:obj :none
               :point {:name :none :part [0]}}
-   :camera {:pos [0 0 0 0]
+   :camera {:pos [0 0 200 0]
             :v-dist
             :h-dist}
    :canvas {:width 0 :height 0
@@ -36,7 +37,7 @@
   (util/store-locally "state" state))
 
 (defn- init-watches
-  "Initializers any state-atom watchers."
+  "Initializes any state-atom watchers."
   [state]
   (add-watch state :redraw-canvas
              (let [canvas (.getElementById js/document "canvas")
@@ -44,6 +45,16 @@
                (fn [_ _ _ new]
                  (util/request-anim-frame
                   #(canvas/redraw-canvas new canvas context))))))
+
+(defn- init-events
+  "Initializes any event listeners."
+  [state-atom cnv-ac usr-ac]
+  (set! (.-onunload js/window) #(save-state @state-atom))
+  (set! (.-onresize js/window) #(do (cnv-ac canvas/set-canvas-info)
+                                    (go (<! (timeout 100))
+                                        (canvas/translate-canvas!
+                                         (@state-atom :canvas)))))
+  (input/init-key-listeners usr-ac))
 
 (defn- construct-actor
   "Contstructs an 'action-function'
@@ -67,9 +78,6 @@
     (go (while true
           (<! (timeout fps))
           (cnv-ac)))
-    (set! (.-onunload js/window) #(save-state @state))
-    (set! (.-onresize js/window) #((cnv-ac canvas/set-canvas-info)
-                                   (go (<! (timeout 100))
-                                         (canvas/translate-canvas! (@state :canvas)))))
+    (init-events state cnv-ac usr-ac)
     ((.-onresize js/window))
     (usr-ac api/addInitScenario)))
