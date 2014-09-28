@@ -253,7 +253,7 @@
      ;; The selected-object controls
      [:div#object-controls
       [:h3#object-controls-title (object-controls-title selected-obj-name)]
-      [:div#object-panels-wrapper {:style {:display (if (= selected-obj :none)
+      [:div#object-panels-wrapper {:style {:display (if (= selected-obj-name :none)
                                                       "none" "block")}}
        [:ul#control-tabs (control-tabs active-tab)]
        [:div.clearfloat]
