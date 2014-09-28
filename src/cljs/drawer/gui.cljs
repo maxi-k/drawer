@@ -48,12 +48,12 @@
                 (if (= active name)
                   (func :none)
                   (let [f #(do (func :none)
-                               (set! (.-onmousedown js/window) nil)
+                               (set! (.-onmouseup js/window) nil)
                                ;; Reset the cursor to default after the
                                ;; pointer hack has done its job
                                (set! (-> js/document .-body .-style .-cursor) nil))]
                     (do (func name)
-                        (set! (.-onmousedown js/window) f)
+                        (set! (.-onmouseup js/window) f)
                         ;; Hack for iOS only accepting MouseEvent input
                         ;; from cursor:pointer/'clickable' elements
                         (set! (-> js/document .-body .-style .-cursor) "pointer")))))))
