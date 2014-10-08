@@ -1,5 +1,6 @@
 (ns drawer.geometry
-  (:require [drawer.math :as math]))
+  (:require [drawer.math :as math]
+            [drawer.util :as util]))
 
 (defn default-obj-connections
   "Returns the default connections
@@ -36,7 +37,7 @@
     [(/ (* px h-dist) fd)
      (/ (* py v-dist) fd)]))
 
-(defn project-point
+(defn P4->P2
   "Projects a 4D point onto the 2d plain."
   [point camera]
   (-> point
@@ -49,7 +50,7 @@
   [obj :points2d]"
   [obj camera]
   (assoc obj :points2d
-         (mapv #(project-point %1 camera)
+         (mapv #(P4->P2 %1 camera)
                (obj :points))))
 
 (defn- get-object-part
@@ -140,7 +141,7 @@
   ([camera points connections center speed]
      {:points points
       :connections connections
-      :points2d (mapv #(project-point %1 camera) points)
+      :points2d (mapv #(P4->P2 %1 camera) points)
       :rotation {:active (not (every? zero? speed))
                  :speed speed
                  :center center}}))
