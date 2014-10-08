@@ -41,6 +41,12 @@
     (js/alert val)
     (swap! alert-map assoc id)))
 
+(defn alert-return
+  "Alerts given value and returns it unchanged."
+  [x]
+  (js/alert x)
+  x)
+
 (defn construct-htag
   "Constructs an html tag with given params"
   [tag-name content & args]
