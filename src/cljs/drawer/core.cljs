@@ -70,7 +70,7 @@
 (defn ^:export init
   "Initializes the program."
   []
-  (let [state (r/atom initial-state)
+  (let [state (r/atom (fetch-state))
         usr-ac (construct-actor state)
         cnv-ac (construct-actor state canvas/get-canvas-update)]
     (gui/init-gui state usr-ac)
