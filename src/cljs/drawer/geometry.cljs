@@ -37,7 +37,7 @@
     [(/ (* px h-dist) fd)
      (/ (* py v-dist) fd)]))
 
-(defn P4->P2
+(defn- P4->P2
   "Projects a 4D point onto the 2d plain."
   [point camera]
   (-> point
