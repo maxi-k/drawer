@@ -160,16 +160,20 @@
                                [0.75]]
 
                              [ "Dreieck"
-                               [[-100 -100 0 0] [0 100 0 0] [100 -100 0 0]]
-                               (geometry/default-obj-connections 3)]}]
+                               [[-20 -20 -20 0] [0 20 -20 0] [20 -20 -20 0]]
+                               (geometry/default-obj-connections 3)
+                               [:points [[0 0 -20 0]]]
+                               [0.75]]}]
                        (if (contains? objs (obj 0))
                          identity
                          (apply addObject obj))))
-        fn-3d (let [a 50 b -50 c 50 d -50]
-                (addObject "Würfel"
-                           [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
-                            [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
-                           {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
-                           [0.1 0 0 0]))]
+        fn-3d (if (contains? objs "Würfel")
+                identity
+                (let [a 20 b -20 c 20 d -20]
+                  (addObject "Würfel"
+                             [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
+                              [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
+                             {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
+                             [0.1 0 0 0])))]
     ;;((comp fn-2d fn-3d) state)
     (fn-3d state)))
