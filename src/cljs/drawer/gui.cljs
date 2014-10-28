@@ -47,16 +47,17 @@
         (fn [] (let [func #(gui-action (api/toggleDropdown %))]
                 (if (= active name)
                   (func :none)
-                  (let [f #(do (func :none)
+                  (let [set-cursor! #(set! (-> js/document .-body .-style .-cursor) %)
+                        f #(do (func :none)
                                (set! (.-onmouseup js/window) nil)
                                ;; Reset the cursor to default after the
                                ;; pointer hack has done its job
-                               (set! (-> js/document .-body .-style .-cursor) nil))]
+                               (set-cursor! nil))]
                     (do (func name)
                         (set! (.-onmouseup js/window) f)
                         ;; Hack for iOS only accepting MouseEvent input
                         ;; from cursor:pointer/'clickable' elements
-                        (set! (-> js/document .-body .-style .-cursor) "pointer")))))))
+                        (set-cursor! "pointer")))))))
        :title (translate :options)
        :style {:padding "4px 4px 0px 4px"
                :margin-right "5px"}}
@@ -261,7 +262,10 @@
      [:hr]
      [:h4 (translate :test-functions)]
      [:div.button {:on-click #(action (fn [s] (js/alert s) s))}
-      (translate :program-state)]]))
+      (translate :program-state)]
+     [:p]
+     [:div.button {:on-click #(.clear (.-localStorage js/window))}
+      (translate :clear-storage)]]))
 
 (defn message
   "The message that can appear on the top right of the screen."

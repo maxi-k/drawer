@@ -42,6 +42,8 @@
                     :de "Testfunktionen"}
    :program-state {:en "Program-state"
                    :de "Programmstatus"}
+   :clear-storage {:en "Clear local storage"
+                   :de "Lokalen Speicher zurücksetzen"}
    :info-tab {:en "Info"
               :de "Info"}
    :rotation-tab {:en "Rotation"
