@@ -14,44 +14,41 @@
   (let [cwidth (js/parseInt (.-offsetWidth (util/element-by-id "controls")))
         width (dec (max (- (.-innerWidth js/window) cwidth) 750))
         height (max (.-innerHeight js/window) 600)
+        screen-center-x (/ (-> js/window .-screen .-width) 2)
+        screen-center-y (/ (-> js/window .-screen .-height) 2)
         center-x (/ width 2)
         center-y (/ height 2)]
     (-> state
         (assoc-in [:canvas :width] width)
         (assoc-in [:canvas :height] height)
         (assoc-in [:canvas :center] [center-x center-y 0 0])
-        (assoc-in [:camera :h-dist] (/ center-x (math/tan (/ horizontal-fov 2))))
-        (assoc-in [:camera :v-dist] (/ center-y (math/tan (/ vertical-fov 2)))))))
+        (assoc-in [:camera :h-dist] (/ screen-center-x (math/tan (/ horizontal-fov 2))))
+        (assoc-in [:camera :v-dist] (/ screen-center-y (math/tan (/ vertical-fov 2)))))))
 
 (defn- draw-object
   "Draws given object on the canvas.
   Doesn't set the canvas strokeStyle
   or change any other settings."
   [obj ctx]
-  (let [points (obj :points2d)
-        start (points 0)]
+  (let [points (obj :points2d)]
     (.beginPath ctx)
-    (condp = (count points)
+    (condp identical? (count points)
       ;; Object is a single point
-      1 (doto ctx
-          (.arc (start 0) (- (start 1)) 2 0 (* 2 (.-PI js/Math)))
-          (.stroke)
-          (.closePath))
+      1 (let [p (points 0)]
+          (.arc ctx (p 0) (- (p 1)) 2 0 (* 2 (.-PI js/Math))))
       ;; Object is a line
-      2 (doto ctx
-          (.moveTo (start 0) (- (start 1)))
-          (.lineTo ((points 1) 0) (- ((points 1) 1)))
-          (.stroke)
-          (.closePath))
+      2 (let [p0 (points 0), p1 (points 1)]
+          (.moveTo ctx (p0 0) (- (p0 1)))
+          (.lineTo ctx (p1 0) (- (p1 1))))
       ;; Object has more than 2 points
       (let [connections (obj :connections)]
         (doseq [[from to] connections
                 :let [from-p (points from)]
                 to-p (mapv #(points %) to)]
           (.moveTo ctx (from-p 0) (- (from-p 1)))
-          (.lineTo ctx (to-p 0) (- (to-p 1))))
-        (.stroke ctx)
-        (.closePath ctx)))))
+          (.lineTo ctx (to-p 0) (- (to-p 1))))))
+    (.stroke ctx)
+    (.closePath ctx)))
 
 (def ^:private center-axes
   (let [ds 100
@@ -130,12 +127,12 @@
         update-fns (for [[obj-name _]
                          (filter #(requires-update? (second %)) objs)]
                      (fn [s] (if (contains? (s :objects) obj-name)
-                              (assoc-in s
-                                        [:objects obj-name]
-                                        (update-object
-                                         (get-in s [:objects obj-name])
-                                         s))
-                              s)))]
+                               (assoc-in s
+                                         [:objects obj-name]
+                                         (update-object
+                                          (get-in s [:objects obj-name])
+                                          s))
+                               s)))]
     (if (empty? update-fns)
       state
       ((apply comp update-fns) state))))
