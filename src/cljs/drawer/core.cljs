@@ -13,7 +13,7 @@
   the objects with in milliseconds."
   (/ 1000 60))
 
-(def ^:private initial-state
+(def initial-state
   "The initial state of the program."
   {:selected {:obj :none
               :point {:name :none :part [0]}}
@@ -29,19 +29,19 @@
   "Loads the state from local storage
   and keywordifies the right parts."
   []
-  (util/fetch-local "state" initial-state))
+  (util/fetch-local "drawer.state" initial-state))
 
 (defn- save-state
   "Stores the state locally."
   [state]
-  (util/store-locally "state" state))
+  (util/store-locally "drawer.state" state))
 
 (defn- init-watches
   "Initializes any state-atom watchers."
   [state]
-  (add-watch state :redraw-canvas
-             (let [canvas (.getElementById js/document "canvas")
-                   context (.getContext canvas "2d")]
+  (let [canvas (.getElementById js/document "canvas")
+        context (.getContext canvas "2d")]
+    (add-watch state :redraw-canvas
                (fn [_ _ _ new]
                  (util/request-anim-frame
                   #(canvas/redraw-canvas new canvas context))))))
@@ -60,7 +60,7 @@
   "Contstructs an 'action-function'
   for 'state', that applies
   (apply comp action add-fns)
-  th the state immediately."
+  to the state immediately."
   [state & add-fns]
   (let [add-action (apply comp add-fns)]
     (fn
