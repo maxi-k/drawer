@@ -28,6 +28,8 @@
             :de "Punkte"}
    :center {:en "Center"
             :de "Zentrum"}
+   :active-camera {:en "Active Camera"
+                   :de "Aktive Kamera"}
    :select-nothing {:en "Select Nothing"
                     :de "Nichts auswählen"}
    :nothing-selected {:en "Nothing selected"

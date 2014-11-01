@@ -10,6 +10,16 @@
 (defn cos [angle] (.cos js/Math angle))
 (defn tan [angle] (.tan js/Math angle))
 
+(defn abs
+  "Returns the absolute value of given number"
+  [n]
+  (if (>= n 0) n (- n)))
+
+(defn sqrt
+  "Returns the square root of given number."
+  [n]
+  (.sqrt js/Math n))
+
 (defn deg-to-rad
   "Turns a degree value into
   a radian."

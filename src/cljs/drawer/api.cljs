@@ -2,6 +2,7 @@
   (:require [drawer.util :as util]
             [drawer.lang :as lang]
             [drawer.geometry :as geometry]
+            [drawer.math :as math :refer [sqrt]]
             [cljs.core.async :as async :refer [put! chan >! <! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -35,8 +36,8 @@
   "Returns a function that removes an object from the object list."
   [obj-name]
   (fn [state] (-> state
-                 (assoc-in [:selected :obj] :none)
-                 (update-in [:objects] dissoc obj-name))))
+                  (assoc-in [:selected :obj] :none)
+                  (update-in [:objects] dissoc obj-name))))
 
 (defn ^:export updateObjectProjection
   "Returns a function that re-computes the 2d-points
@@ -176,11 +177,20 @@
                          (apply addObject obj))))
         fn-3d (if (contains? objs "Würfel")
                 identity
-                (let [a 20 b -20 c 20 d -20]
+                (let [a 20 b -20 c 20 d -20 e 20 f -20]
                   (addObject "Würfel"
-                             [[a a d 0] [b a d 0] [b b d 0] [a b d 0]
-                              [a a c 0] [b a c 0] [b b c 0] [a b c 0]]
+                             [[a a d e] [b a d e] [b b d e] [a b d e]
+                              [a a c f] [b a c f] [b b c f] [a b c f]]
                              {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
-                             [0.1 0 0 0])))]
-    ;;((comp fn-2d fn-3d) state)
-    (fn-3d state)))
+                             [0.1 0 0 0])))
+        fn-4d (if (contains? objs "Pentachoron")
+                identity
+                (let []
+                  (addObject "Pentachoron"
+                             (mapv (fn [coll] (mapv #(* 30 %) coll))
+                                   [[1 1 1 -1] [1 -1 -1 -1] [-1 1 -1 -1]
+                                    [-1 -1 1 -1] [0 0 0 (- (sqrt 5) 1)]])
+                             {0 [1 2 3 4], 1 [0 2 3 4], 2 [0 1 3 4], 3 [0 1 2 4],
+                              4 [0 1 2 3]}
+                             [0 0 0 0])))]
+    (fn-4d state)))

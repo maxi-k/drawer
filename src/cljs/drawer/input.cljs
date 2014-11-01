@@ -12,7 +12,7 @@
   (let [step 3
         action (fn [pos f]
                  (user-ac (comp (api/updateEveryObjectProjection)
-                                #(update-in % [:camera :pos pos] f step))))]
+                                #(update-in % [:camera :cams (get-in % [:camera :active]) pos] f step))))]
     (condp = (.-keyCode event)
       37 (action 0 +) ;; left-arrow  -> camera x +
       39 (action 0 -) ;; right-arrow -> camera x -
@@ -20,8 +20,9 @@
       40 (action 1 +) ;; down-arrow  -> camera y +
       33 (action 2 -) ;; page-up     -> camera z -
       34 (action 2 +) ;; page-down   -> camera z +
-      17 (action 3 +) ;; ctrl/strg   -> camera w +
-      18 (action 3 -) ;; alt         -> camera w -
+      35 (action 3 +) ;; end         -> camera w +
+      36 (action 3 -) ;; home        -> camera w -
+      18 (user-ac #(update-in % [:camera :active] (fn [v] (if (= 0 v) 1 0))))
       nil)))
 
 (defn- listen-keys

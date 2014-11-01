@@ -20,37 +20,37 @@
        (mapv #(reduce + %))
        (mapv #(/ % (count points)))))
 
-;; TODO: This is a stub
-(defn- P4->P3
-  "Projects a 4D point onto
-  a 2D plain."
-  [point camera]
-  (pop point))
+(def ^:private far-plane 500)
 
-;; TODO: This is a stub
-(defn- P3->P2
-  "Projects a 3D point onto
-  the 2D plain."
-  [point {:keys [pos h-dist v-dist]}]
-  (let [[px py pz] (map + point pos)
-        fd (if (zero? pz) 1 pz)]
-    [(/ (* px h-dist) fd)
-     (/ (* py v-dist) fd)]))
-
-(defn- P4->P2
-  "Projects a 4D point onto the 2d plain."
+(defn- project-point-to-hyperplane
+  "Projects a nD point onto the (n-1D) hyperplane
+  of that dimension, giving back a point with
+  one coordinate less"
   [point camera]
-  (-> point
-      (P4->P3 camera)
-      (P3->P2 camera)))
+  (let [dim (count point)
+        lp-coord (last point)
+        lc-coord (camera (dec dim))
+        dist (math/abs (- lc-coord lp-coord))
+        k (- (/ far-plane (if (zero? dist) 1 dist)))]
+    (mapv (fn [p c] (+ c (* k (- p c))))
+          (pop point) camera)))
+
+(defn- project-point
+  "Projects a nD point onto the 2d plain."
+  [point camera]
+  (loop [new-point point]
+    (let [cam (get-in camera [:cams (- (count new-point) 3)])]
+      (if (= 2 (count new-point))
+        new-point
+        (recur (project-point-to-hyperplane new-point cam))))))
 
 (defn project-obj
-  "Projects an object (4D) onto the screen (2D).
+  "Projects an object (nD) onto the screen (2D).
   Doesn't draw the object, just updates its 2D points
   [obj :points2d]"
   [obj camera]
   (assoc obj :points2d
-         (mapv #(P4->P2 %1 camera)
+         (mapv #(project-point %1 camera)
                (obj :points))))
 
 (defn- get-object-part
@@ -141,7 +141,7 @@
   ([camera points connections center speed]
      {:points points
       :connections connections
-      :points2d (mapv #(P4->P2 %1 camera) points)
+      :points2d (mapv #(project-point %1 camera) points)
       :rotation {:active (not (every? zero? speed))
                  :speed speed
                  :center center}}))

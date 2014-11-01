@@ -17,9 +17,8 @@
   "The initial state of the program."
   {:selected {:obj :none
               :point {:name :none :part [0]}}
-   :camera {:pos [0 0 200 0]
-            :v-dist
-            :h-dist}
+   :camera {:active 1
+            :cams [[0 0 200 0] [0 0 0 200]]}
    :canvas {:width 0 :height 0
             :center [0 0]}
    :objects {}
@@ -70,7 +69,7 @@
 (defn ^:export init
   "Initializes the program."
   []
-  (let [state (r/atom (fetch-state))
+  (let [state (r/atom initial-state)
         usr-ac (construct-actor state)
         cnv-ac (construct-actor state canvas/get-canvas-update)]
     (gui/init-gui state usr-ac)

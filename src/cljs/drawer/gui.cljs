@@ -194,7 +194,7 @@
                         :on-change #(action (api/setPointCoord
                                              selected-obj idx1 idx2
                                              (float (-> % .-target .-value))))
-                       :disabled (get-in obj [:rotation :active])}])
+                        :disabled (get-in obj [:rotation :active])}])
              [:div.clearfloat]])]))]))
 
 (defn object-rotation
@@ -262,7 +262,8 @@
         selected-obj (get-in @state [:objects selected-obj-name])
         active-dropdown (@gui-state :active-dropdown)
         active-tab (@gui-state :active-tab)
-        object-keys (keys (@state :objects))
+        objects (@state :objects)
+        object-keys (keys objects)
         pending-object (@state :pending-object)]
     [:div#controls
      ;; The title
@@ -275,16 +276,17 @@
      [:div#object-controls
       [:h3#object-controls-title (object-controls-title selected-obj-name)]
       [:div#object-panels-wrapper
-       {:style {:display (if (and (not= selected-obj-name :none)
-                                  (contains? object-keys selected-obj-name))
-                           "none" "block")}}
+       {:style {:display (if (contains? objects selected-obj-name)
+                           "block" "none")}}
        [:ul#control-tabs (control-tabs active-tab)]
        [:div.clearfloat]
-       (control-panels selected-obj selected active-tab action)]]
-     [:p {:style {:display (if (get-in selected-obj [:rotation :active])
-                             "block" "none")
-                  :font-weight "bold"}}
-      (str (translate :rotation-active-msg) ".")]
+       (control-panels selected-obj selected active-tab action)
+       [:p {:style {:display (if (get-in selected-obj [:rotation :active])
+                               "block" "none")
+                    :font-weight "bold"}}
+        (str (translate :rotation-active-msg) ".")]]]
+     [:hr]
+     [:p (str (translate :active-camera) ": " (get-in @state [:camera :active]))]
      [:hr]
      [:h4 (translate :test-functions)]
      [:div.button {:on-click #(action (fn [s] (js/alert s) s))}

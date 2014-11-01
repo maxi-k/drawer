@@ -3,9 +3,6 @@
             [drawer.math :as math]
             [drawer.geometry :as g]))
 
-(def horizontal-fov (math/deg-to-rad 100))
-(def vertical-fov   (math/deg-to-rad  80))
-
 (defn set-canvas-info
   "Set the canvas size to the maximum
   possible without overflow and update
@@ -13,15 +10,11 @@
   [state]
   (let [cwidth (js/parseInt (.-offsetWidth (util/element-by-id "controls")))
         width (dec (max (- (.-innerWidth js/window) cwidth) 750))
-        height (max (.-innerHeight js/window) 600)
-        screen-center-x (/ (-> js/window .-screen .-width) 2)
-        screen-center-y (/ (-> js/window .-screen .-height) 2)]
+        height (max (.-innerHeight js/window) 600)]
     (-> state
         (assoc-in [:canvas :width] width)
         (assoc-in [:canvas :height] height)
-        (assoc-in [:canvas :center] [(/ width 2) (/ height 2) 0 0])
-        (assoc-in [:camera :h-dist] (/ screen-center-x (math/tan (/ horizontal-fov 2))))
-        (assoc-in [:camera :v-dist] (/ screen-center-y (math/tan (/ vertical-fov 2)))))))
+        (assoc-in [:canvas :center] [(/ width 2) (/ height 2) 0 0]))))
 
 (defn- draw-object
   "Draws given object on the canvas.
@@ -59,7 +52,9 @@
 (defn- draw-canvas-center
   "Draws the center of the canvas."
   [ctx camera]
-  (doseq [line center-axes]
+  (doseq [i (range 4)
+          :let [line (center-axes i)]]
+    (when (= i 3) (set! (.-strokeStyle ctx) "#0f0"))
     (draw-object (g/project-obj line camera) ctx)))
 
 (defn- clear
