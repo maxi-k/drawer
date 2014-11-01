@@ -15,13 +15,11 @@
         width (dec (max (- (.-innerWidth js/window) cwidth) 750))
         height (max (.-innerHeight js/window) 600)
         screen-center-x (/ (-> js/window .-screen .-width) 2)
-        screen-center-y (/ (-> js/window .-screen .-height) 2)
-        center-x (/ width 2)
-        center-y (/ height 2)]
+        screen-center-y (/ (-> js/window .-screen .-height) 2)]
     (-> state
         (assoc-in [:canvas :width] width)
         (assoc-in [:canvas :height] height)
-        (assoc-in [:canvas :center] [center-x center-y 0 0])
+        (assoc-in [:canvas :center] [(/ width 2) (/ height 2) 0 0])
         (assoc-in [:camera :h-dist] (/ screen-center-x (math/tan (/ horizontal-fov 2))))
         (assoc-in [:camera :v-dist] (/ screen-center-y (math/tan (/ vertical-fov 2)))))))
 

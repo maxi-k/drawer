@@ -106,13 +106,14 @@
     padding: 10px 5px 5px 5px;
 }
 
-.view-table tr td{
-    padding: 5px;
-}
-
 #object-info ul li input {
     display: block;
     width: 50px;
     padding: 1px;
     float: left;
+}
+
+.view-table tr td{
+    padding: 5px;
+    vertical-align: top;
 }

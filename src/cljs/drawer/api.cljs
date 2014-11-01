@@ -89,6 +89,12 @@
     (if (contains? (state :objects) obj-name)
       (assoc-in state [:objects obj-name :rotation :active] do-rotate))))
 
+(defn ^:export setRotationCenterType
+  [obj-name center-type]
+  (fn [state]
+    (if (contains? (state :objects) obj-name)
+      (assoc-in state [:objects obj-name :rotation :center :type] center-type))))
+
 (defn ^:export setRotationOnAll
   "Returns a function that activates/deactivates the rotation on all objects."
   [do-rotate]
@@ -104,7 +110,8 @@
   (fn [state]
     (let [path [:objects obj-name]
           new-obj (-> (get-in state path)
-                      (assoc-in [:points point-index coord-index] new-value)
+                      (assoc-in [:points point-index coord-index]
+                                (js/parseInt new-value))
                       (geometry/project-obj (state :camera)))]
       (assoc-in state path new-obj))))
 

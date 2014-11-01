@@ -23,7 +23,7 @@
   [:div#prompt-overlay {:style {:display "none"}}
    [:div#prompt-wrapper
     [:a#prompt-close-button
-     {:href "#", :on-click #(action api/closePrompt)} "X"]
+     {:href "#", :on-click #(action identity)} "X"]
     [:div.clearfloat]
     [:div#prompt]]])
 
@@ -45,19 +45,19 @@
       {:on-click
        (fn-wrapper
         (fn [] (let [func #(gui-action (api/toggleDropdown %))]
-                (if (= active name)
-                  (func :none)
-                  (let [set-cursor! #(set! (-> js/document .-body .-style .-cursor) %)
-                        f #(do (func :none)
-                               (set! (.-onmouseup js/window) nil)
-                               ;; Reset the cursor to default after the
-                               ;; pointer hack has done its job
-                               (set-cursor! nil))]
-                    (do (func name)
-                        (set! (.-onmouseup js/window) f)
-                        ;; Hack for iOS only accepting MouseEvent input
-                        ;; from cursor:pointer/'clickable' elements
-                        (set-cursor! "pointer")))))))
+                 (if (= active name)
+                   (func :none)
+                   (let [set-cursor! #(set! (-> js/document .-body .-style .-cursor) %)
+                         f #(do (func :none)
+                                (set! (.-onmouseup js/window) nil)
+                                ;; Reset the cursor to default after the
+                                ;; pointer hack has done its job
+                                (set-cursor! nil))]
+                     (do (func name)
+                         (set! (.-onmouseup js/window) f)
+                         ;; Hack for iOS only accepting MouseEvent input
+                         ;; from cursor:pointer/'clickable' elements
+                         (set-cursor! "pointer")))))))
        :title (translate :options)
        :style {:padding "4px 4px 0px 4px"
                :margin-right "5px"}}
@@ -130,9 +130,9 @@
    [:li
     (dropdown-button "object-dropdown" active-dropdown "cube"
                      (fn [func] (if (= :none selected-obj)
-                                 #(api/showMessage
-                                   gui-action (translate :nothing-selected))
-                                 func)))
+                                  #(api/showMessage
+                                    gui-action (translate :nothing-selected))
+                                  func)))
     (object-dropdown active-dropdown selected-obj action)]
    [:div.clearfloat]])
 
@@ -190,30 +190,50 @@
              (for [idx2 [0 1 2 3]
                    :let [coord (point idx2)]]
                ^{:key idx2}
-               [:input (if (get-in obj [:rotation :active])
-                         {:type "text" :value (str coord)
-                          :read-only true}
-                         {:type "text" :value (str coord)
-                          :on-change #(action (api/setPointCoord
-                                               selected-obj idx1 idx2
-                                               (float (-> % .-target .-value))))
-                          :read-only false})])
+               [:input {:type "text" :value (str coord)
+                        :on-change #(action (api/setPointCoord
+                                             selected-obj idx1 idx2
+                                             (float (-> % .-target .-value))))
+                       :disabled (get-in obj [:rotation :active])}])
              [:div.clearfloat]])]))]))
 
-;; Todo: Stub
 (defn object-rotation
   "Component representing the content of the rotation tab."
   [object {:keys [obj]} action]
-  [:div#object-rotation
-   {:style {:display "none"}}
-   [:table.view-table
-    [:tr
-     [:td [:span (str (translate :active) ":")]]
-     [:td [:input {:type "checkbox"
-                   :checked (boolean (get-in object [:rotation :active]))
-                   :on-change #(action (api/setRotation
-                                        obj
-                                        (-> % .-target .-checked)))}]]]]])
+
+  (let [active? (get-in object [:rotation :active])]
+    [:div#object-rotation
+     {:style {:display "none"}}
+     [:table.view-table
+      [:tr
+       [:td [:span (str (translate :active) ":")]]
+       [:td [:input {:type "checkbox"
+                     :checked (boolean active?)
+                     :name "rotation-active"
+                     :on-change #(action (api/setRotation
+                                          obj
+                                          (-> % .-target .-checked)))}]]]
+      [:tr
+       [:td [:span (str (translate :type) ":")]]
+       [:td [:form
+             (for [name ["points" "object" "object-part" "part" "center"]]
+               ^{:key name}
+               [:div {:style {:display "block" :margin "0 0 2px 0"}}
+                [:input {:type "radio"
+                         :name "rotation-type"
+                         :checked (= (get-in object [:rotation :center :type])
+                                     (keyword name))
+                         :on-change #(action (api/setRotationCenterType
+                                              obj
+                                              (keyword name)))
+                         :value name
+                         :disabled active?}]
+                (str "  " (translate :rotation-type
+                                     (keyword name)))])]]]
+      [:tr
+       [:td [:span (str (translate :center) ":")]]
+       [:td [:input {:type "text"
+                     :disabled active?}]]]]]))
 
 ;; Todo: Stub
 (defn object-mirroring
@@ -254,11 +274,17 @@
      ;; The selected-object controls
      [:div#object-controls
       [:h3#object-controls-title (object-controls-title selected-obj-name)]
-      [:div#object-panels-wrapper {:style {:display (if (= selected-obj-name :none)
-                                                      "none" "block")}}
+      [:div#object-panels-wrapper
+       {:style {:display (if (and (not= selected-obj-name :none)
+                                  (contains? object-keys selected-obj-name))
+                           "none" "block")}}
        [:ul#control-tabs (control-tabs active-tab)]
        [:div.clearfloat]
        (control-panels selected-obj selected active-tab action)]]
+     [:p {:style {:display (if (get-in selected-obj [:rotation :active])
+                             "block" "none")
+                  :font-weight "bold"}}
+      (str (translate :rotation-active-msg) ".")]
      [:hr]
      [:h4 (translate :test-functions)]
      [:div.button {:on-click #(action (fn [s] (js/alert s) s))}

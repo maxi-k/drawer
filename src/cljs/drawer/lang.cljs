@@ -18,12 +18,16 @@
              :de "Optionen"}
    :active {:en "Active"
             :de "Aktiv"}
+   :type {:en "Type"
+          :de "Typ"}
    :add {:object {:en "Add Object"
                   :de "Objekt hinzufügen"}
          :scenario {:en "Add scenario"
                     :de "Szenario hinzufügen"}}
    :points {:en "Points"
             :de "Punkte"}
+   :center {:en "Center"
+            :de "Zentrum"}
    :select-nothing {:en "Select Nothing"
                     :de "Nichts auswählen"}
    :nothing-selected {:en "Nothing selected"
@@ -49,7 +53,19 @@
    :rotation-tab {:en "Rotation"
                   :de "Drehung"}
    :mirroring-tab {:en "Mirroring"
-                   :de "Spiegelung"}})
+                   :de "Spiegelung"}
+   :rotation-type {:points {:en "Points"
+                            :de "Punkte"}
+                   :object {:en "Object"
+                            :de "Objekt"}
+                   :object-part {:en "Object Part"
+                                 :de "Objekt-Teil"}
+                   :part {:en "Own part"
+                          :de "Eigener Teil"}
+                   :center {:en "Own Center"
+                            :de "Eigenes Zentrum"}}
+   :rotation-active-msg {:en "Deactivate the rotation of this object to edit it"
+                         :de "Deaktivieren Sie die Drehung des Objektes um es zu bearbeiten"}})
 
 (defn translate
   "Translates given key(s) using the
