@@ -24,6 +24,10 @@
                   :de "Objekt hinzufügen"}
          :scenario {:en "Add scenario"
                     :de "Szenario hinzufügen"}}
+   :replace-objects {:en "Replace current objects"
+                     :de "Jetzige Objekte ersetzen"}
+   :load-scene {:en "Load Scene"
+                :de "Szene Laden"}
    :points {:en "Points"
             :de "Punkte"}
    :center {:en "Center"
@@ -45,7 +49,7 @@
                       :stop {:en "Stop rotating all objects"
                              :de "Rotation aller Objekte stoppen"}}
    :test-functions {:en "Test functionality"
-                    :de "Testfunktionen"}
+                    :de "Falls etwas nicht funktioniert"}
    :program-state {:en "Program-state"
                    :de "Programmstatus"}
    :clear-storage {:en "Clear local storage"
@@ -67,7 +71,15 @@
                    :center {:en "Own Center"
                             :de "Eigenes Zentrum"}}
    :rotation-active-msg {:en "Deactivate the rotation of this object to edit it"
-                         :de "Deaktivieren Sie die Drehung des Objektes um es zu bearbeiten"}})
+                         :de "Deaktivieren Sie die Drehung des Objektes um es zu bearbeiten"}
+   :plane {:en "Rotationplane"
+           :de "Rotationsebene"}
+   :max-deg {:en "Max. Degree"
+             :de "Max. Winkel"}
+   :done-deg {:en "Rot. Degree"
+              :de "Gedr. Winkel"}
+   :deg {:en "Degree"
+         :de "Winkel"}})
 
 (defn translate
   "Translates given key(s) using the

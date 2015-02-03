@@ -117,3 +117,7 @@
     padding: 5px;
     vertical-align: top;
 }
+
+input.small {
+    width: 30px;
+}

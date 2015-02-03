@@ -1,0 +1,10 @@
+#+TITLE:  Drawer
+#+AUTHOR: Maximilian Kuschewski
+* What's this?
+
+A web-site for drawing polygons, polyhedra and polychora, written in ClojureScript. This
+is a complementary program for my essay "Rotation and Mirroring in the plane
+R^2, the Space R^3 and the Hyperspace R^3", which I created
+in the course of the seminar "Polygons, Polyhedra and Polychora". The writing of a
+scientific essay as part of a seminar is part of the graduation from German high school,
+the Abitur.

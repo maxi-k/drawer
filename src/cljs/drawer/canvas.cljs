@@ -9,7 +9,7 @@
   the respective fields in the state."
   [state]
   (let [cwidth (js/parseInt (.-offsetWidth (util/element-by-id "controls")))
-        width (dec (max (- (.-innerWidth js/window) cwidth) 750))
+        width (- (max (- (.-innerWidth js/window) cwidth) 750) 10)
         height (max (.-innerHeight js/window) 600)]
     (-> state
         (assoc-in [:canvas :width] width)
@@ -42,12 +42,11 @@
     (.closePath ctx)))
 
 (def ^:private center-axes
-  (let [ds 100
-        -ds (- ds)]
-    [{:points [[-ds 0 0 0] [ds 0 0 0]]}
-     {:points [[0 -ds 0 0] [0 ds 0 0]]}
-     {:points [[0 0 -ds 0] [0 0 ds 0]]}
-     {:points [[0 0 0 -ds] [0 0 0 ds]]}]))
+  (let [ds 100]
+    (vec (for [u-vec g/unit-vectors]
+           {:points
+            [(mapv (partial * ds) u-vec)
+             (mapv (partial * (- ds)) u-vec)]}))))
 
 (defn- draw-canvas-center
   "Draws the center of the canvas."
@@ -100,7 +99,7 @@
   redraw or not."
   [obj]
   (and (get-in obj [:rotation :active])
-       (not-every? zero? (get-in obj [:rotation :speed]))))
+       (not= 0 (get-in obj [:rotation :deg]))))
 
 (defn update-object
   "Updates given object by applying

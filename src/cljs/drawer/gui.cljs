@@ -3,14 +3,20 @@
             [drawer.util :as util]
             [drawer.math :as math]
             [drawer.lang :refer [translate]]
-            [reagent.core :as r]))
+            [drawer.scenes :as scenes]
+            [drawer.geometry :as g]
+            [reagent.core :as r]
+            [clojure.string :as string]))
 
 (def ^:private gui-state
   "The initial state of the gui-only stuff."
   (r/atom  {:message {:value ""
                       :opacity 0.0}
             :active-tab "info-tab"
-            :active-dropdown :none}))
+            :active-dropdown :none
+            :promt? false
+            :prompt-data scenes/seminar-scenes
+            :prompt-selected-item :none}))
 
 (defn- gui-action
   "Swaps the gui-state atom with given function"
@@ -18,14 +24,47 @@
   (swap! gui-state f))
 
 (defn prompt
-  "The (hidden) prompt div."
+  "The (hidden) prompt div that shows the scenario list."
   [action]
-  [:div#prompt-overlay {:style {:display "none"}}
-   [:div#prompt-wrapper
-    [:a#prompt-close-button
-     {:href "#", :on-click #(action identity)} "X"]
-    [:div.clearfloat]
-    [:div#prompt]]])
+  (let [prompt? (@gui-state :prompt?)
+        prompt-data (@gui-state :prompt-data)
+        selected-item (@gui-state :prompt-selected-item)
+        close-action #(gui-action (fn [s] (-> s
+                                              (assoc :prompt? false)
+                                              (assoc :prompt-selected-item :none))))
+        load-action (fn [replace?]
+                      (fn []
+                        (if (contains? prompt-data selected-item)
+                          (do
+                            (close-action)
+                            (action (api/loadScene prompt-data selected-item replace?)))
+                          (api/showMessage gui-action (translate :nothing-selected)))))]
+    [:div#prompt-overlay {:style {:display (if prompt? "block" "none")}}
+     [:div#prompt-wrapper
+      [:a#prompt-close-button
+       {:href "#", :on-click close-action} "X"]
+      [:div.clearfloat]
+      [:div#prompt {:style {:height "90%"}}
+       [:div {:style {:width "40%"}}
+        [:ul.selectable-list
+         (for [[name _] prompt-data
+               :let [selected? (= selected-item name)]]
+           ^{:key name}
+           [:li {:style {:border-bottom "1px solid #AAA"}
+                 :class (if selected? "light-background" "white-background")
+                 :on-click #(gui-action (fn [s] (-> s
+                                                    (assoc :prompt-selected-item name))))}
+            name
+            [:div.clearfloat]])]]
+       [:div.clearfloat]]
+      [:div#prompt-bottom
+       [:div.button
+        {:on-click (load-action false)}
+        (translate :load-scene)]
+       [:div.button.dangerous
+        {:on-click (load-action true)}
+        (translate :replace-objects)]
+       [:div.clearfloat]]]]))
 
 (defn canvas
   "The canvas element."
@@ -69,14 +108,17 @@
   (acitvated by the plus-button)."
   [active-dropdown]
   (let [name "add-dropdown"
-        active? (= name active-dropdown)]
+        active? (= name active-dropdown)
+        o-prompt (fn [data]
+                   (gui-action (fn [s] (-> s (assoc :prompt? true)
+                                           (assoc :promt-data data)))))]
     [:div.dropdown
      {:id name
       :style {:display (if active? "block" "none")
               :top "20px" :left "27px"}}
      [:ul
-      [:li {:on-click #(api/showMessage gui-action "Not implemented yet")}
-       (translate :add :object)]]]))
+      [:li {:on-click #(o-prompt scenes/seminar-scenes)}
+       (translate :add :scenario)]]]))
 
 (defn general-dropdown
   "Component representing the general-dropdown
@@ -159,7 +201,8 @@
   [active-tab]
   (for [[id name] (util/map-to-fn-of
                    #(translate (keyword %))
-                   "info-tab" "rotation-tab" "mirroring-tab")
+                   "info-tab" "rotation-tab" ;; "mirroring-tab"
+                   )
         :let [selected? (= id active-tab)]]
     ^{:key id}
     [:li.tab {:class (if selected? "light-background" "white-background")
@@ -197,43 +240,128 @@
                         :disabled (get-in obj [:rotation :active])}])
              [:div.clearfloat]])]))]))
 
+(defn- get-rot-center-value-display
+  "Returns the string used for displaying the
+  rotation center :value in given text field."
+  [ctype cval field-num]
+  (case ctype
+    :points (apply str (interpose " " (cval field-num)))
+    :object cval
+    :center cval
+    :part (str (cval field-num))
+    "ERROR"))
+
+(defn- set-rot-center-value
+  "Sets the rotation center value using the information of
+  given text field."
+  [obj-name ctype cval field-num value]
+  (let [path [:objects obj-name :rotation :center :value]]
+    (case ctype
+      :points (fn [s] (assoc-in s (conj path field-num)
+                                (mapv js/parseInt (string/split value #",\s|,|\s"))))
+      :object (fn [s] (assoc-in s path value))
+      :center (fn [s] (assoc-in s path :own-center))
+      :part (fn [s] (assoc-in s (conj path field-num) (js/parseInt value)))
+      identity)))
+
+(def ^:private obj-rot-cache (atom {}))
 (defn object-rotation
   "Component representing the content of the rotation tab."
   [object {:keys [obj]} action]
 
-  (let [active? (get-in object [:rotation :active])]
+  (let [active? (get-in object [:rotation :active])
+        ctype (get-in object [:rotation :center :type])
+        cval (get-in object [:rotation :center :value])
+        pval (get-in object [:rotation :plane])
+        max-deg (get-in object [:rotation :max-deg])
+        done-deg (get-in object [:rotation :done-deg])
+        deg (get-in object [:rotation :deg])
+        parsed-or-nil (fn [x] (let [raw (-> x .-target .-value)]
+                                (if (or (nil? raw) (empty? raw))
+                                  nil
+                                  (js/parseInt raw))))]
     [:div#object-rotation
      {:style {:display "none"}}
      [:table.view-table
-      [:tr
-       [:td [:span (str (translate :active) ":")]]
-       [:td [:input {:type "checkbox"
-                     :checked (boolean active?)
-                     :name "rotation-active"
-                     :on-change #(action (api/setRotation
-                                          obj
-                                          (-> % .-target .-checked)))}]]]
-      [:tr
-       [:td [:span (str (translate :type) ":")]]
-       [:td [:form
-             (for [name ["points" "object" "object-part" "part" "center"]]
-               ^{:key name}
-               [:div {:style {:display "block" :margin "0 0 2px 0"}}
-                [:input {:type "radio"
-                         :name "rotation-type"
-                         :checked (= (get-in object [:rotation :center :type])
-                                     (keyword name))
-                         :on-change #(action (api/setRotationCenterType
-                                              obj
-                                              (keyword name)))
-                         :value name
-                         :disabled active?}]
-                (str "  " (translate :rotation-type
-                                     (keyword name)))])]]]
-      [:tr
-       [:td [:span (str (translate :center) ":")]]
-       [:td [:input {:type "text"
-                     :disabled active?}]]]]]))
+      [:tbody
+       [:tr
+        [:td [:span (str (translate :active) ":")]]
+        [:td [:input {:type "checkbox"
+                      :checked (boolean active?)
+                      :name "rotation-active"
+                      :on-change #(action (api/setRotation
+                                           obj
+                                           (-> % .-target .-checked)))}]]]
+       [:tr
+        [:td [:span (str (translate :deg)) ":"]]
+        [:td [:input.small {:type "text-field"
+                            :name "rot-deg"
+                            :disabled active?
+                            :value deg
+                            :on-change #(action (fn [s] (assoc-in s [:objects obj :rotation :deg] (parsed-or-nil %))))}]]]
+       [:tr
+        [:td [:span (str (translate :max-deg)) ":"]]
+        [:td [:input.small {:type "text-field"
+                            :name "rot-max-deg"
+                            :disabled active?
+                            :value (if (nil? max-deg) "" max-deg)
+                            :on-change #(action (fn [s] (assoc-in s [:objects obj :rotation :max-deg] (parsed-or-nil %))))}]]]
+       [:tr
+        [:td [:span (str (translate :done-deg)) ":"]]
+        [:td [:span (int done-deg)]]]
+       [:tr
+        [:td [:span (str (translate :type) ":")]]
+        [:td [:form
+              (for [name ["points" "object" "part" "center"]
+                    :let [id (keyword name)]]
+                ^{:key name}
+                [:div {:style {:display "block" :margin "0 0 2px 0"}}
+                 [:input {:type "radio"
+                          :name "rotation-type"
+                          :checked (= (get-in object [:rotation :center :type])
+                                      (keyword name))
+                          :on-change
+                          (fn []
+                            (when-not (contains? @obj-rot-cache obj)
+                              (swap! obj-rot-cache assoc obj {}))
+                            (swap! obj-rot-cache assoc-in [obj ctype] cval)
+                            (action (comp (api/setRotationCenterType obj id)
+                                          (api/setRotationCenterValue obj (get-in @obj-rot-cache [obj id])))))
+                          :value name
+                          :disabled active?}]
+                 (str "  " (translate :rotation-type
+                                      (keyword name)))])]]]]]
+     [:table.view-table
+      [:tbody
+       [:tr [:td [:span (str (translate :center) ":")]]]
+       (let [amount-map {:points 3
+                         :object 1
+                         :part 3
+                         :center 0}
+             cur-amount (amount-map ctype)
+             get-style #(if (<= % cur-amount) "block" "none")]
+         (for [n (range (min (count cval) cur-amount))]
+           ^{:key n}
+           [:tr [:td [:input {:type "text-field"
+                              :name (str "rotation-center-value" n)
+                              :value (get-rot-center-value-display ctype cval n)
+                              :disabled active?
+                              :on-change
+                              #(action (set-rot-center-value obj ctype cval n
+                                                             (-> % .-target .-value)))}]]]))
+       [:tr [:td [:span (str cval)]]]
+       [:tr [:td [:span " "]]]
+       [:tr [:td [:span (translate :plane)]]]
+       [:tr [:td [:input {:type "text-field"
+                          :name (str "rotation-plane")
+                          :value (apply str (interpose " " pval))
+                          :disabled active?
+                          :on-change
+                          #(action
+                            (fn [s]
+                              (assoc-in s [:objects obj :rotation :plane]
+                                        (mapv js/parseInt (string/split (-> % .-target .-value) #",\s|,|\s")))))}]]]
+       [:tr [:td [:span (translate :max-deg)]]]]]]))
 
 ;; Todo: Stub
 (defn object-mirroring
@@ -252,7 +380,8 @@
     [:div#control-panels
      (put-style (object-info obj selected action) "info-tab")
      (put-style (object-rotation obj selected action) "rotation-tab")
-     (put-style (object-mirroring) "mirroring-tab")]))
+     ;; (put-style (object-mirroring) "mirroring-tab")
+     ]))
 
 (defn controls
   "The controls div on the left."
@@ -288,12 +417,11 @@
      [:hr]
      [:p (str (translate :active-camera) ": " (get-in @state [:camera :active]))]
      [:hr]
-     [:h4 (translate :test-functions)]
-     [:div.button {:on-click #(action (fn [s] (js/alert s) s))}
-      (translate :program-state)]
-     [:p]
-     [:div.button {:on-click #(.clear (.-localStorage js/window))}
-      (translate :clear-storage)]]))
+     ;; [:h4 (translate :test-functions)]
+     [:div.button {:on-click #(action (fn [s] (js/alert s) s))} (translate :program-state)]
+     ;; [:p]
+     ;; [:div.button {:on-click #(.clear (.-localStorage js/window))} (translate :clear-storage)]
+     ]))
 
 (defn message
   "The message that can appear on the top right of the screen."

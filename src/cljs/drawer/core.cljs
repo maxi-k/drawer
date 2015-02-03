@@ -18,7 +18,8 @@
   {:selected {:obj :none
               :point {:name :none :part [0]}}
    :camera {:active 1
-            :cams [[0 0 200 0] [0 0 0 200]]}
+            :cams [[30 70 200 -60]
+                   [20 20 0 150]]}
    :canvas {:width 0 :height 0
             :center [0 0]}
    :objects {}
@@ -69,7 +70,7 @@
 (defn ^:export init
   "Initializes the program."
   []
-  (let [state (r/atom initial-state)
+  (let [state (r/atom (fetch-state))
         usr-ac (construct-actor state)
         cnv-ac (construct-actor state canvas/get-canvas-update)]
     (gui/init-gui state usr-ac)
@@ -78,5 +79,4 @@
           (<! (timeout fps))
           (cnv-ac)))
     (init-events state cnv-ac usr-ac)
-    ((.-onresize js/window))
-    (usr-ac api/addInitScenario)))
+    ((.-onresize js/window))))

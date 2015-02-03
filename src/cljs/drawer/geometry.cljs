@@ -2,6 +2,10 @@
   (:require [drawer.math :as math]
             [drawer.util :as util]))
 
+(def unit-vectors
+  "The four unit vectors making up 4d space"
+  [[1 0 0 0] [0 1 0 0] [0 0 1 0] [0 0 0 1]])
+
 (defn default-obj-connections
   "Returns the default connections
   of an object with given count of points.
@@ -39,6 +43,7 @@
   "Projects a nD point onto the 2d plain."
   [point camera]
   (loop [new-point point]
+    ;; Switch cameras depending on 4d/4d projection
     (let [cam (get-in camera [:cams (- (count new-point) 3)])]
       (if (= 2 (count new-point))
         new-point
@@ -84,7 +89,7 @@
                     :points center-value
                     :object (get-in objs [center-value :points])
                     :center [(obj-center obj)]
-                    :object-part ((get-object-part center-value objs) :points)
+                    :part (mapv (obj :points) center-value)
                     [(obj-center obj)])
            center (if (nil? center) [(obj-center obj)] center)] ;; default
        {:points center
@@ -92,24 +97,93 @@
   ([obj objs camera]
      (project-obj (get-rot-center obj objs) camera)))
 
-;; TODO: Only rotates 2D points!
-(defn- rotate-point
-  [point center deg]
-  (let [dxs (math/vector-from-to center point)
-        angle (math/deg-to-rad deg)
-        nx (- (* (dxs 0) (math/cos angle)) (* (dxs 1) (math/sin angle)))
-        ny (+ (* (dxs 0) (math/sin angle)) (* (dxs 1) (math/cos angle)))]
-    [(+ nx (center 0)) (+ ny (center 1)) (point 2) (point 3)]))
+(def ^:private dim-down-transfs
+  "Returns the Matrix that transforms
+  'center' by rotating around the arctan(2)
+  of the coordinates of the coordinates at coord-idx
+  of the points at point-idx. Gives back center with the
+  j-th coords. eliminated to 0, and its reverse matrix"
+  (fn [center point-idx coord-idx]
+    (fn [point]
+      (let [p (center point-idx)
+            deg (math/atan2 (p (dec coord-idx))
+                            (p (- coord-idx 2)))
+            matrix (math/build-rot-matrix 4 coord-idx (dec coord-idx))]
+        [#(math/apply-raw-rot-matrix matrix deg %)
+         #(math/apply-raw-rot-matrix matrix (- deg) %)]))))
 
-;; TODO: This is just a test-implementation
+(defn compose-transforms
+  "Takes one transform for rotating the object
+  a variable amount of [dim-down-transfs] arguments
+  and returns the overall transform required to rotate
+  the object."
+  [rot-trans center dim-args]
+  (let [dim-transfs (mapv #(dim-down-transfs center (% 0) (% 1)) dim-args)]
+    (fn [point deg]
+      (let [transforms (mapv #(% point) dim-transfs)
+            [to-fns from-fns] (vec (util/order-by-index transforms))
+            p1 ((apply comp (reverse to-fns)) point)
+            p2 (rot-trans deg p1)]
+        ((apply comp from-fns) p2)))))
+
+(def get-0d-transform
+  "Returns the transformation that can rotate
+  a point around given point."
+  (memoize
+   (fn [center plane]
+     (fn [point deg]
+       (math/use-rot-matrix 4 (plane 0) (plane 1) deg point)))))
+
+(def ^:private get-1d-transform
+  "Returns the transformation that can rotate
+  a point around given axis"
+  (memoize
+   (fn [center plane]
+     (compose-transforms #(math/use-rot-matrix 4 (plane 0) (plane 1) %1 %2)
+                         center
+                         [[1 3] [1 2]]))))
+
+(def ^:private get-2d-transform
+  "Returns the transformation that can rotate
+  a point around given plane"
+  (memoize
+   (fn [center]
+     (compose-transforms #(math/use-rot-matrix 4 3 4 %1 %2)
+                         center
+                         [[1 4] [1 3] [1 2] [2 4] [2 3]]))))
+
+(defn- rotate-point
+  "Rotates a 4d point around given center."
+  [point center deg plane]
+  (let [a (center 0)
+        tf #(mapv - % a)
+        tl #(mapv + % a)
+        tm     (condp = (count center)
+                 ;; Around point
+                 1 (get-0d-transform center plane)
+                 ;; Around axis
+                 2 (get-1d-transform center plane)
+                 ;; around a plane
+                 (get-2d-transform center))]
+    (-> point (tf) (tm (math/deg-to-rad deg)) (tl))))
+
 (defn- rotate
   "Rotates an object around
   another one."
   [obj objs]
-  (let [center (((get-rot-center obj objs) :points) 0)
-        npoints (mapv #(rotate-point % center ((get-in obj [:rotation :speed]) 0))
+  (let [center ((get-rot-center obj objs) :points)
+        max-deg (get-in obj [:rotation :max-deg])
+        done-deg (get-in obj [:rotation :done-deg])
+        deg (get-in obj [:rotation :deg])
+        still-active? (or (nil? max-deg) (< done-deg max-deg))
+        npoints (mapv #(rotate-point % center
+                                     deg
+                                     (get-in obj [:rotation :plane]))
                       (obj :points))]
-    (assoc-in obj [:points] npoints)))
+    (-> obj
+        (assoc-in [:rotation :done-deg] (+ done-deg deg))
+        (assoc-in [:rotation :active] still-active?)
+        (assoc :points npoints))))
 
 ;; TODO: Stub
 (defn- mirror
@@ -123,8 +197,8 @@
   The value:
   :points => [[100 40 20 0] [30 50 90 10] ..] ; points
   :object => 'Object-Name-On-Canvas'
-  :object-part => {:name 'Object-Name-On-Canvas'
-  :part [0 2 5 3 ..] ; point-indices from object with :name
+  :center => Object center
+  :part => [1 2 3] point-indices of object
   or :part :center ; rot. around center of object w/ :name
   :center => [doesn't matter] ; rotate around center of object"
   [type value]
@@ -142,6 +216,7 @@
      {:points points
       :connections connections
       :points2d (mapv #(project-point %1 camera) points)
-      :rotation {:active (not (every? zero? speed))
-                 :speed speed
+      :rotation {:active (not= 0 speed)
+                 :plane [1 2]
+                 :deg speed
                  :center center}}))

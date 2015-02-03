@@ -6,21 +6,6 @@
             [cljs.core.async :as async :refer [put! chan >! <! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-(defn ^:export addObject
-  "Returns a function that adds an object to the object list."
-  ([obj-name points conns]
-     (addObject obj-name points conns [:center nil] [0 0 0 0]))
-  ([obj-name points conns rot-speed]
-     (addObject obj-name points conns [:center nil] rot-speed))
-  ([obj-name points conns rot-center rot-speed]
-     (fn [state]
-       (assoc-in state [:objects obj-name]
-                 (geometry/create-object (state :camera)
-                                         (js->clj points)
-                                         (js->clj conns)
-                                         (apply geometry/create-rot-center rot-center)
-                                         rot-speed)))))
-
 (defn ^:export duplicateObject
   "Returns a function that duplicates the object
   with 'obj-name'."
@@ -88,13 +73,24 @@
   [obj-name do-rotate]
   (fn [state]
     (if (contains? (state :objects) obj-name)
-      (assoc-in state [:objects obj-name :rotation :active] do-rotate))))
+      (-> state
+          (assoc-in [:objects obj-name :rotation :active] do-rotate)
+          (assoc-in [:objects obj-name :rotation :done-deg] 0)))))
 
 (defn ^:export setRotationCenterType
   [obj-name center-type]
   (fn [state]
     (if (contains? (state :objects) obj-name)
-      (assoc-in state [:objects obj-name :rotation :center :type] center-type))))
+      (assoc-in state [:objects obj-name :rotation :center :type] center-type)
+      state)))
+
+(defn ^:export setRotationCenterValue
+  [obj-name center-val]
+  (fn [state]
+    (if (and (contains? (state :objects) obj-name)
+             (some? center-val))
+      (assoc-in state [:objects obj-name :rotation :center :value] center-val)
+      state)))
 
 (defn ^:export setRotationOnAll
   "Returns a function that activates/deactivates the rotation on all objects."
@@ -115,6 +111,13 @@
                                 (js/parseInt new-value))
                       (geometry/project-obj (state :camera)))]
       (assoc-in state path new-obj))))
+
+(defn ^:export loadScene
+  "Loads a scene into the state by replacing the other objects."
+  [prompt-data selected-item replace?]
+  (if replace?
+    (fn [s] (-> s (assoc :objects (prompt-data selected-item))))
+    (fn [s] (assoc s :objects (merge (s :objects) (prompt-data selected-item))))))
 
 (defn ^:export setActiveTab
   "Returns a function that sets the currently active tab."
@@ -147,50 +150,3 @@
              (action #(update-in % [:message :opacity] - step)))
            (action #(assoc-in % [:message :opacity] 0))
            (action #(assoc-in % [:message :value] ""))))))
-
-;; TEMPORARY
-(defn ^:export addInitScenario
-  "Returns a function that adds a default scenario to the geometry."
-  [state]
-  (let [objs (state :objects)
-        fn-2d (apply comp
-                     (for [obj
-                           #{[ "Punkt"
-                               [[-100 0 0 0]]
-                               (geometry/default-obj-connections 1)
-                               [:object-part {:name "Linie" :part :center}]
-                               [-0.8]]
-
-                             [ "Linie"
-                               [[-100 -100 0 0] [-120 100 0 0]]
-                               (geometry/default-obj-connections 2)
-                               [:object-part {:name "Dreieck" :part :center}]
-                               [0.75]]
-
-                             [ "Dreieck"
-                               [[-20 -20 -20 0] [0 20 -20 0] [20 -20 -20 0]]
-                               (geometry/default-obj-connections 3)
-                               [:points [[0 0 -20 0]]]
-                               [0.75]]}]
-                       (if (contains? objs (obj 0))
-                         identity
-                         (apply addObject obj))))
-        fn-3d (if (contains? objs "Würfel")
-                identity
-                (let [a 20 b -20 c 20 d -20 e 20 f -20]
-                  (addObject "Würfel"
-                             [[a a d e] [b a d e] [b b d e] [a b d e]
-                              [a a c f] [b a c f] [b b c f] [a b c f]]
-                             {0 [1 3 4], 1 [2 5], 2 [3 6], 3 [7], 4 [5 7], 5 [6], 6 [7]}
-                             [0.1 0 0 0])))
-        fn-4d (if (contains? objs "Pentachoron")
-                identity
-                (let []
-                  (addObject "Pentachoron"
-                             (mapv (fn [coll] (mapv #(* 30 %) coll))
-                                   [[1 1 1 -1] [1 -1 -1 -1] [-1 1 -1 -1]
-                                    [-1 -1 1 -1] [0 0 0 (- (sqrt 5) 1)]])
-                             {0 [1 2 3 4], 1 [0 2 3 4], 2 [0 1 3 4], 3 [0 1 2 4],
-                              4 [0 1 2 3]}
-                             [0 0 0 0])))]
-    (fn-4d state)))

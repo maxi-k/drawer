@@ -2,6 +2,13 @@
   (:require [goog.string :as gstring]
             [tailrecursion.cljson :refer [clj->cljson cljson->clj]]))
 
+(defn order-by-index
+  "[[a b] [c d] [d e]]
+  =>
+  [[a c d] [b d e]]"
+  [args]
+  (apply map vector args))
+
 (defn update-values
   "Updates the map 'm' by applying
   the function 'f' with the
