@@ -419,8 +419,9 @@
      [:hr]
      ;; [:h4 (translate :test-functions)]
      [:div.button {:on-click #(action (fn [s] (js/alert s) s))} (translate :program-state)]
-     ;; [:p]
-     ;; [:div.button {:on-click #(.clear (.-localStorage js/window))} (translate :clear-storage)]
+     [:p]
+     [:div.button {:on-click #(.clear (.-localStorage js/window))} (translate :clear-storage)]
+     [:p]
      ]))
 
 (defn message
