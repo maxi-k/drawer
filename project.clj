@@ -3,10 +3,10 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-2371"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
+                 [org.clojure/clojurescript "1.7.28"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [reagent "0.4.3"]
+                 [reagent "0.5.0"]
                  [tailrecursion/cljson "1.0.7"]]
   :plugins [[lein-cljsbuild "1.0.3"]]
   :source-paths ["src/cljs"]
@@ -25,6 +25,5 @@
                  :output-dir "out/js/compiler/production"
                  :optimizations :advanced
                  :pretty-print false
-                 :preamble ["reagent/react.min.js"]
                  :source-map "out/js/drawer.min.js.map"}}
                ]})
