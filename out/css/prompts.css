@@ -6,7 +6,7 @@
     height: 100%;
 /*    background-color: rgba(0,0,0,0.65); */
 
-    z-level: 999;
+    z-index: 500;
 }
 
 #prompt-wrapper {

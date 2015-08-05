@@ -8,9 +8,8 @@
   possible without overflow and update
   the respective fields in the state."
   [state]
-  (let [cwidth (js/parseInt (.-offsetWidth (util/element-by-id "controls")))
-        width (- (max (- (.-innerWidth js/window) cwidth) 750) 10)
-        height (max (.-innerHeight js/window) 600)]
+  (let [width (max (.-innerWidth js/window) 750)
+        height (max (.-innerHeight js/window) 500)]
     (-> state
         (assoc-in [:canvas :width] width)
         (assoc-in [:canvas :height] height)

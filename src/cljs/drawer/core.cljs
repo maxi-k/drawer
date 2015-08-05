@@ -8,6 +8,7 @@
             [cljs.core.async :as async :refer [put! chan >! <! timeout alts!]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+
 (def ^:private fps
   "The fps the canvas should update
   the objects with in milliseconds."
