@@ -8,3 +8,25 @@ R2, the Space R3 and the Hyperspace R4", which I created
 in the course of the seminar "Polygons, Polyhedra and Polychora". The writing of a
 scientific essay as part of a seminar is part of the graduation from German high school,
 the Abitur.
+
+* Controls
+
+- ALT: Change the active camera (There are two cameras because there are 4
+  dimensions)
+- LEFT ARROW: Increases the active camera's x-position ('moving the screen
+  content to the left')
+- RIGHT ARROW: Decreases the active camera's x-position ('moving the screen
+  content to the right')
+- UP ARROW: Decreases the active camera's y-position ('moving the screen content
+  down')
+- DOWN ARROW: Increases the active camera's y-position ('moving the screen
+  content up')
+- PAGE UP: Decreases the active camera's z-position ('zooming in') [mac: fn-up]
+- PAGE DOWN: Increases the active camera's z-position ('zooming out') [mac: fn-down]
+- HOME: Decreases the active camera's w-position ('zooming into the 4th
+  dimension') [mac: fn-left]
+- END: Increases the active camera's w-position ('zooming out of the 4th
+  dimension') [mac: fn-right]
+
+HOME and END only have a visible effect when manipulating camera 1, because it
+is the one projecting 4D to 3D
