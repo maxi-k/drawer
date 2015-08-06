@@ -14,9 +14,9 @@ the Abitur.
 - ALT: Change the active camera (There are two cameras because there are 4
   dimensions)
 - RIGHT ARROW: Decreases the active camera's x-position ('moving the screen
-  content to the right')
-- LEFT ARROW: Increases the active camera's x-position ('moving the screen
   content to the left')
+- LEFT ARROW: Increases the active camera's x-position ('moving the screen
+  content to the right')
 - UP ARROW: Decreases the active camera's y-position ('moving the screen content
   down')
 - DOWN ARROW: Increases the active camera's y-position ('moving the screen
@@ -30,3 +30,95 @@ the Abitur.
 
 HOME and END only have a visible effect when manipulating camera 1, because it
 is the one projecting 4D to 3D
+* Technologies/Packages
+** [[https://github.com/clojure/clojurescript][ClojureScript]]
+Everything is written in ClojureScript. There's no JavaScript.
+** [[https://github.com/clojure/core.async][core.async]]
+Used for various things where asynchronous or timed actions are required. Most
+notably, it is used for the main 'rendering loop' updating the canvas:
+
+#+BEGIN_SRC clojure
+;; From core.cljs, edited
+    (go (while true
+          (<! (timeout fps))
+          (update-canvas (canvas/get-canvas-update))))
+#+END_SRC
+
+Or for smoothly fading in a growl-style message div, showing it for given time, and
+then fading it out again:
+
+#+BEGIN_SRC clojure
+;; From api.cljs, unedited
+(defn ^:export showMessage
+  "Shows the message div with given message for
+  'time' milliseconds and then hides it again.
+  Accesses the state through given action."
+  ([action msg] (showMessage action msg 2500))
+  ([action msg time]
+     (let [step 0.05
+           times (/ 1.0 step)
+           fps 1]
+       (go (action #(assoc-in % [:message :value] msg))
+           (doseq [i (range times)]
+             (<! (timeout fps))
+             (action #(update-in % [:message :opacity] + step)))
+           (action #(assoc-in % [:message :opacity] 1.0))
+           (<! (timeout time))
+           (doseq [i (range (inc times))]
+             (<! (timeout fps))
+             (action #(update-in % [:message :opacity] - step)))
+           (action #(assoc-in % [:message :opacity] 0))
+           (action #(assoc-in % [:message :value] ""))))))
+#+END_SRC
+
+** [[https://github.com/reagent-project/reagent][reagent]]
+Used for rendering everything. Nothing is done in html itself:
+
+#+BEGIN_SRC html
+/* From index.html */
+  <body>
+    <script> drawer.core.init() </script>
+  </body>
+#+END_SRC
+
+The html tree is defined in a hiccup-style syntax:
+
+#+BEGIN_SRC clojure
+;; From gui.cljs, unedited
+(defn body
+  "Combining all components into the body component."
+  [state action]
+  [:div#body-wrapper
+   (prompt action)
+   (controls state action)
+   (canvas (@state :canvas))
+   [:div.clearfloat]
+   (message (@gui-state :message))])
+
+(defn init-gui
+  "Initialize the gui rendering."
+  [state user-action]
+  (r/render-component [(fn [] (body state user-action))]
+                      (.-body js/document)))
+#+END_SRC
+
+** [[https://github.com/tailrecursion/cljson][cljson]]
+Converts clojure(script) data to json ad vice versa. Used for html5 local storage
+#+BEGIN_SRC clojure
+;; From util.cljs, unedited
+(defn store-locally
+  "Stores given object in the
+  html5 localStorage.
+  Use fetch to get it again."
+  [k obj]
+  (.setItem js/localStorage k (clj->cljson obj)))
+
+(defn fetch-local
+  "Fetches a locally stored object
+  with given key and converts it
+  into a clojure data-structure."
+  [k default]
+  (if-let [item (.getItem js/localStorage k)]
+    (cljson->clj item)
+    default))
+#+END_SRC
