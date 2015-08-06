@@ -39,9 +39,9 @@ notably, it is used for the main 'rendering loop' updating the canvas:
 
 #+BEGIN_SRC clojure
 ;; From core.cljs, edited
-    (go (while true
-          (<! (timeout fps))
-          (update-canvas (canvas/get-canvas-update))))
+(go (while true
+      (<! (timeout fps))
+      (update-canvas (canvas/get-canvas-update))))
 #+END_SRC
 
 Or for smoothly fading in a growl-style message div, showing it for given time, and
