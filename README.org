@@ -13,10 +13,10 @@ the Abitur.
 
 - ALT: Change the active camera (There are two cameras because there are 4
   dimensions)
-- LEFT ARROW: Increases the active camera's x-position ('moving the screen
-  content to the left')
 - RIGHT ARROW: Decreases the active camera's x-position ('moving the screen
   content to the right')
+- LEFT ARROW: Increases the active camera's x-position ('moving the screen
+  content to the left')
 - UP ARROW: Decreases the active camera's y-position ('moving the screen content
   down')
 - DOWN ARROW: Increases the active camera's y-position ('moving the screen
